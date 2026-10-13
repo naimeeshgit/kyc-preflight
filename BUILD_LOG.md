@@ -405,3 +405,14 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
   - New first starter: "Prepare me for review". It produces a "Review-ready checklist" for her exact case: what the reviewer checks, each status, the fix, and likely reviewer questions with honest answers.
   - Every answer ends with "Still open:" when something is, and one suggestion points to the next open item.
 - **Small fixes:** "Just draft it" is removed once a draft exists. Each demo path sets its own fictional shop name.
+
+### 6.16 Pointed questions, minimum effort (13 Oct, 22:15–22:40 IST)
+
+- **Trigger (my review):** a reviewer note came back with 7 blanks. That hands the work back to the seller.
+- **Built:**
+  - Before drafting, the assistant asks only the facts that change the document, one per turn: a numbered question under 15 words ("(1/4) How long is one session?") with tappable answer pills ("30 min / 45 min / 60 min"), plus Skip and Just draft it.
+  - After a draft, "Fill the N blanks with me" walks the leftover blanks the same way.
+  - Contact details come from the account, so she is never asked for them.
+  - "Prepare me for review" returns a readiness checklist ("Ready for review: 3 of 8 done") where each open item has a Fix button.
+- **Tested live (astrology):** 45 min → ₹500–1,000 → full refund 24 h before. The draft carried every answer. A follow-up request for an Instagram bio reused them, with one blank instead of seven.
+- **Fixed from the test:** question 4 repeated question 3, called her "she" and offered only Skip. The prompt now requires a real (1/N) count, no repeats, second person and at least 3 options. Skip and Just draft it are added server-side whenever a draft is in progress. A duplicated rule block from an earlier merge was consolidated.
