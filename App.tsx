@@ -378,7 +378,7 @@ function Root() {
       legalName: docs.PAN || NAMES.pan, shopName: brand, description: bizText,
       category: biz ? { id: biz.policy.id, label: biz.policy.label, status: biz.status, reason: biz.policy.reason, extraDocs: biz.policy.extraDocs || [] } : null,
       entity: entity ? DOCPLAN.ENTITIES[entity].label : null, have: have.map((k) => DOCPLAN.HAVE[k].label),
-      plan: docPlan ? docPlan.items.map((i) => ({ label: i.label, status: i.status })) : [],
+      plan: docPlan ? docPlan.items.map((i) => ({ label: i.label, status: i.status, how: i.how ? `${i.how.what}: ${i.how.time}. ${i.how.how}` : undefined })) : [],
       channel: siteMode, siteUrl: site?.finalUrl || siteUrl, siteMissing: site?.kind === "site" ? site.missing.map((k) => site.pages[k]?.label || k) : [],
       route, slot: slotLabel,
       names: (names?.ai.comparisons || []).map((x) => ({ doc: x.doc, name: docs[x.doc] || "", verdict: x.verdict })),

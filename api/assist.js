@@ -41,7 +41,7 @@ function caseBlock(c = {}) {
   lines.push(`What she said she sells: """${clip(c.description, 600)}"""`);
   if (c.category) lines.push(`Category row: ${clip(c.category.label, 120)} (${clip(c.category.id, 80)}); status told to seller: ${clip(c.category.status, 30)}${c.category.reason ? `; reason on the row: ${clip(c.category.reason, 200)}` : ""}${c.category.extraDocs?.length ? `; category needs: ${c.category.extraDocs.map((d) => clip(d, 60)).join(", ")}` : ""}`);
   if (c.entity) lines.push(`Business set-up: ${clip(c.entity, 60)}; registrations she has: ${(c.have || []).map((x) => clip(x, 40)).join(", ") || "none"}`);
-  if (c.plan?.length) lines.push(`Document plan: ${c.plan.map((p) => `${clip(p.label, 80)} = ${clip(p.status, 12)}`).join("; ")}`);
+  if (c.plan?.length) lines.push(`Document plan: ${c.plan.map((p) => `${clip(p.label, 80)} = ${clip(p.status, 12)}${p.how ? ` (how: ${clip(p.how, 260)})` : ""}`).join("; ")}`);
   if (c.channel) lines.push(`Takes payments: ${c.channel === "site" ? `on a website ${clip(c.siteUrl, 120)}` : "via Instagram/WhatsApp/in person (Payment Links, QR)"}`);
   if (c.siteMissing?.length) lines.push(`Website pages missing: ${c.siteMissing.map((x) => clip(x, 40)).join(", ")}`);
   if (c.route) lines.push(`KYC route: ${c.route === "video" ? `video KYC call${c.slot ? `, booked ${clip(c.slot, 40)}` : ", not booked yet"}` : "instant (in the KYC registry)"}`);
@@ -67,7 +67,7 @@ Rules:
 - Never help reword, hide or misdescribe a blocked or restricted business. If her category is not supported, say so plainly and help only with honest alternatives (e.g. selling only the supported part of her range).
 - Never explain risk or fraud signals; explain requirements only.
 - Drafts (policy pages, letters, product or business descriptions, reviewer answers, a declaration of business): put them in "draft". Labelled as a draft, plain text, [brackets] for anything unknown (address, GSTIN, account number, dates). Never invent registration or licence numbers, legal citations or facts she hasn't given.
-- How-to answers (Udyam, FSSAI, bank name change, video KYC prep): short numbered steps with where to go and roughly how long it takes. Government portals: udyamregistration.gov.in, foscos.fssai.gov.in, gst.gov.in. No legal or tax advice beyond that; suggest a CA when it truly depends.
+- How-to answers (Udyam, FSSAI, bank name change, video KYC prep): short numbered steps with where to go and roughly how long it takes. When the document plan gives a "how" for an item, use its timing and facts exactly; don't contradict the app. Don't quote button labels or screen wording of government portals; describe the step instead ("register with your Aadhaar and verify the OTP"). Government portals: udyamregistration.gov.in, foscos.fssai.gov.in, gst.gov.in. No legal or tax advice beyond that; suggest a CA when it truly depends.
 - Language: ${lang === "hi" ? "reply in simple Hinglish (Hindi in Latin script). Drafts meant for reviewers or customers stay in simple English." : "simple English."}
 - Keep the message short; the draft carries the length.
 - suggestions: 2-3 next questions she might tap, specific to what's still open in her case.
