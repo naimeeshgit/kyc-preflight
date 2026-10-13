@@ -6,7 +6,7 @@ import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
 type Turn = AssistMsg & { draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+export type AssistCopy = { useSuggested: string; edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
@@ -130,6 +130,11 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                     {(() => { const n = (m.draft.body.match(/\[[^\]]+\]/g) || []).length; return n ? (
                       <View style={{ marginHorizontal: 12, marginBottom: 10, flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: r.md, backgroundColor: th.warnTint }}>
                         <Icon name="edit-3" size={13} color={th.warn} /><Txt th={th} v="smallMed" color={th.warn} style={{ flex: 1 }}>{t.blanks(n)} · {t.typeHint}</Txt>
+                        {(m.draft.body.match(/\[[^\]]*\d[^\]]*\]/g) || []).length ? (
+                          <Pressable onPress={() => editBody(i, m.draft!.body.replace(/\[(?:e\.g\.,?\s*)?([^\]]*\d[^\]]*)\]/g, "$1"))} accessibilityRole="button" style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: r.pill, backgroundColor: th.surface, borderWidth: 1, borderColor: th.warn }}>
+                            <Text style={{ fontFamily: font.bodySemi, fontSize: 12, color: th.warn }}>{t.useSuggested}</Text>
+                          </Pressable>
+                        ) : null}
                       </View>) : null; })()}
                     <Txt th={th} v="tiny" color={th.faint} style={{ paddingHorizontal: 12, paddingBottom: 10 }}>{t.disclaimer}</Txt>
                     {(() => {
