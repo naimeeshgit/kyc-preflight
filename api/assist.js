@@ -94,7 +94,8 @@ Rules:
 - After you give a draft, point to the next open base in "suggestions" (as a tappable request), so she keeps moving until everything is covered.
 - Drafting is a quick tap-through, built for minimum effort. Before drafting, list to yourself the facts the document needs that are NOT in her case (session length, price range, refund window, delivery time, which bank, how customers book...). Then ask them ONE per turn: one short pointed question (under 15 words), prefixed with its number like "(1/3)", and put 3-4 concrete tap answers in "suggestions" (real values like "30 min", "₹500-1,000", "7 days"), with "${lang === "hi" ? "Skip" : "Skip"}" as the last. Ask only what truly changes the document, at most 4, most important first; the number in "(1/N)" is the real count, and if fewer facts are missing, ask fewer. Never ask for anything already in her case or already answered in this conversation, never ask two questions about the same thing, never ask open-ended questions. Speak to her as "you", never "she". Every question needs at least 3 real answer options. If she taps Skip, move on and leave that one as a [bracket]. After the last answer, draft immediately. If she says "just draft it", draft now.
 - "Fill the N blanks with me": go through the [brackets] in your last draft as pointed tap questions as above (skip email, address and account numbers), then give the full draft again with the answers in.
-- Contact details: use her registered mobile from the case; never ask for email, address or account numbers, leave those as [brackets].
+- When you give a draft, the message is one or two plain sentences; never repeat an earlier question in it.
+- Contact details: write her registered mobile from the case into the draft itself (never a [bracket] for it); never ask for email, address or account numbers, leave those as [brackets].
 - Bank name letter: addressed to her branch, quotes her PAN name and the account name exactly as in the case, asks to update the account holder name to match the PAN, lists PAN copy as enclosure.
 - Drafts (policy pages, letters, product or business descriptions, reviewer answers, a declaration of business): put them in "draft". Labelled as a draft, plain text, [brackets] for anything unknown (address, GSTIN, account number, dates). Never invent registration or licence numbers, legal citations or facts she hasn't given.
 - How-to answers (Udyam, FSSAI, bank name change, video KYC prep): short numbered steps with where to go and roughly how long it takes. When the document plan gives a "how" for an item, use its timing and facts exactly; don't contradict the app. Don't quote button labels or screen wording of government portals; describe the step instead ("register with your Aadhaar and verify the OTP"). Government portals: udyamregistration.gov.in, foscos.fssai.gov.in, gst.gov.in. No legal or tax advice beyond that; suggest a CA when it truly depends.
@@ -130,7 +131,9 @@ module.exports = async (req, res) => {
     }
 
     const { json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) }], { maxTokens: 2000, tool: TOOL });
-    const draft = json.draft && json.draft.body ? { title: clip(json.draft.title, 120) || "Draft", body: String(json.draft.body), notes: (json.draft.notes || []).slice(0, 3) } : null;
+    // Facts the app already has never stay blank: her registered mobile fills any phone placeholder.
+    const fillKnown = (t) => c.mobile ? String(t).replace(/\[(?:your |registered |whatsapp |contact |phone\s*\/\s*)?(?:mobile|phone|whatsapp|contact)(?: number| no\.?)?(?:[^\]]{0,30})\]/gi, c.mobile) : String(t);
+    const draft = json.draft && json.draft.body ? { title: clip(json.draft.title, 120) || "Draft", body: fillKnown(json.draft.body), notes: (json.draft.notes || []).filter((n) => !/mobile|phone number/i.test(n)).slice(0, 3) } : null;
     let suggestions = (json.suggestions || []).slice(0, 3);
     if (draft) {
       suggestions = suggestions.filter((x) => !/just draft|bas draft|skip/i.test(x));
