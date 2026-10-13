@@ -103,6 +103,7 @@ Rules:
 - Keep the message short; the draft carries the length.
 - suggestions: when you asked a question, the likely answers (see above); otherwise 2-3 next things she might tap, specific to what's still open in her case.
 
+${/^(just draft it|bas draft kar dijiye)\.?$/i.test(String((messages[messages.length - 1] || {}).content || "").trim()) ? "\nSHE JUST TAPPED 'JUST DRAFT IT': write the full draft in this reply, using everything she answered so far and [brackets] for the rest. Do not ask anything.\n" : ""}
 Answer by calling reply.`;
 }
 
@@ -130,7 +131,11 @@ module.exports = async (req, res) => {
       });
     }
 
-    const { json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) }], { maxTokens: 2000, tool: TOOL });
+    let { json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) }], { maxTokens: 2000, tool: TOOL });
+    // "Just draft it" means a draft now. One retry if the model asked again anyway.
+    if (/^(just draft it|bas draft kar dijiye)\.?$/i.test(last.content.trim()) && !(json.draft && json.draft.body)) {
+      ({ json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) + "\nREMINDER: the reply MUST include the draft object. No questions." }], { maxTokens: 2000, tool: TOOL }));
+    }
     // Facts the app already has never stay blank: her registered mobile fills any phone placeholder.
     const fillKnown = (t) => c.mobile ? String(t).replace(/\[(?:your |registered |whatsapp |contact |phone\s*\/\s*)?(?:mobile|phone|whatsapp|contact)(?: number| no\.?)?(?:[^\]]{0,30})\]/gi, c.mobile) : String(t);
     const draft = json.draft && json.draft.body ? { title: clip(json.draft.title, 120) || "Draft", body: fillKnown(json.draft.body), notes: (json.draft.notes || []).filter((n) => !/mobile|phone number/i.test(n)).slice(0, 3) } : null;
