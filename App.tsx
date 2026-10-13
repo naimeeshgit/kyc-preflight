@@ -53,6 +53,18 @@ const haptic = (kind: "success" | "warning" | "light") => {
   else Haptics.notificationAsync(kind === "success" ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning).catch(() => {});
 };
 
+/** Which part of the application an attached draft belongs to, from its title. */
+function attachKey(title: string): string {
+  const t = title.toLowerCase();
+  if (/refund|cancel|return/.test(t)) return "site:refund";
+  if (/privacy/.test(t)) return "site:privacy";
+  if (/shipping|delivery/.test(t)) return "site:shipping";
+  if (/terms|conditions/.test(t)) return "site:terms";
+  if (/contact/.test(t)) return "site:contact";
+  if (/bank|branch|account (holder )?name|letter/.test(t)) return "names:bank";
+  return "category";
+}
+
 /** The demo stores are static pages on the deployed site, so the server-side check can always fetch them. */
 const DEMO_ORIGIN = "https://kyc-preflight.vercel.app";
 
@@ -358,18 +370,20 @@ function Root() {
   // Product rule: the bank name is what the ₹1 check compares with PAN and the seller can fix it cheaply, so anything short of a match blocks payment. An Aadhaar doubt goes to a reviewer.
   const bankVerdict = names?.ai.comparisons.find((x) => x.doc === "Bank")?.verdict;
   const namesTone: Tone = !names ? "bad" : bankVerdict !== "match" || names.ai.comparisons.some((x) => x.verdict === "likely_fail") ? "bad" : names.ai.comparisons.some((x) => x.verdict === "unclear") ? "warn" : "ok";
+  const attachedKeys = useMemo(() => new Set(attached.map((a) => attachKey(a.title))), [attached]);
+  const siteDrafts = site?.kind === "site" ? site.missing.filter((k) => attachedKeys.has(`site:${k}`)).length : 0;
   const passRows: PassRow[] = useMemo(() => {
     const catTone: Tone = !biz ? "bad" : biz.status === "supported" ? "ok" : biz.status === "needs_review" ? "warn" : "bad";
     const routeTone: Tone = !route ? "bad" : route === "instant" || slot ? "ok" : "warn";
     return [
-      { label: c.rowCat, value: biz ? (biz.ai.category_label || biz.policy.label) : "—", tone: catTone, stamp: catTone === "ok" ? c.passed : catTone === "warn" ? c.review : c.fix, onFix: catTone === "ok" ? undefined : () => go(1) },
+      { label: c.rowCat, value: biz ? `${biz.ai.category_label || biz.policy.label}${biz.status === "needs_review" && attachedKeys.has("category") ? ` · ${c.sufAnswers}` : ""}` : "—", tone: catTone, stamp: catTone === "ok" ? c.passed : catTone === "warn" ? c.review : c.fix, onFix: catTone === "ok" ? undefined : () => go(1) },
       { label: c.rowRoute, value: !route ? "—" : route === "instant" ? c.routeInstant : c.routeVideo(slotLabel || "—"), tone: routeTone, stamp: routeTone === "ok" ? c.passed : c.fix, onFix: routeTone === "ok" ? undefined : () => go(2) },
-      { label: c.rowNames, value: namesTone === "ok" ? c.namesOk : namesTone === "warn" ? c.namesWarn : c.namesBad, tone: namesTone, stamp: namesTone === "ok" ? c.passed : namesTone === "warn" ? c.review : c.fix, onFix: namesTone === "ok" ? undefined : () => go(3) },
+      { label: c.rowNames, value: (namesTone === "ok" ? c.namesOk : namesTone === "warn" ? c.namesWarn : c.namesBad) + (namesTone !== "ok" && attachedKeys.has("names:bank") ? ` · ${c.sufLetter}` : ""), tone: namesTone, stamp: namesTone === "ok" ? c.passed : namesTone === "warn" ? c.review : c.fix, onFix: namesTone === "ok" ? undefined : () => go(3) },
       ...(docPlan ? [{ label: c.rowDocs, value: docPlan.ready ? c.docsReady : c.docsMissing(docPlan.items.filter((i) => i.status === "missing").length), tone: (docPlan.ready ? "ok" : "bad") as Tone, stamp: docPlan.ready ? c.passed : c.fix, onFix: docPlan.ready ? undefined : () => go(1) }] : []),
       ...(evidence ? [{ label: c.rowProof, value: evidence.grid.verdict === "ok" ? c.proofOk : evidence.grid.verdict === "warn" ? c.proofWarn : c.proofBad, tone: evidence.grid.verdict as Tone, stamp: evidence.grid.verdict === "ok" ? c.passed : evidence.grid.verdict === "warn" ? c.review : c.fix, onFix: evidence.grid.verdict === "ok" ? undefined : () => go(3) }] : []),
-      ...(siteMode === "site" && site && site.kind !== "social" ? [{ label: c.rowSite, value: site.ok ? (site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk) : c.siteDown, tone: (site.ok && site.missing.length === 0 ? "ok" : "bad") as Tone, stamp: site.ok && site.missing.length === 0 ? c.passed : c.fix, onFix: site.ok && site.missing.length === 0 ? undefined : () => go(1) }] : []),
+      ...(siteMode === "site" && site && site.kind !== "social" ? [{ label: c.rowSite, value: (site.ok ? (site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk) : c.siteDown) + (siteDrafts ? ` · ${c.sufDrafts(siteDrafts)}` : ""), tone: (site.ok && site.missing.length === 0 ? "ok" : "bad") as Tone, stamp: site.ok && site.missing.length === 0 ? c.passed : c.fix, onFix: site.ok && site.missing.length === 0 ? undefined : () => go(1) }] : []),
     ];
-  }, [biz, route, slot, slotLabel, namesTone, site, siteMode, docPlan, evidence, c]);
+  }, [biz, route, slot, slotLabel, namesTone, site, siteMode, docPlan, evidence, c, attachedKeys, siteDrafts]);
   const ready = !passRows.some((x) => x.tone === "bad");
 
   /* What the assistant knows: the seller's case as the rules left it. Nothing else. */
@@ -535,7 +549,8 @@ function Root() {
             {st === "needs_review" ? (
               <Notice th={th} tone="warn" title={c.needs_review}>
                 <Txt th={th}>{c.reviewNote}</Txt>
-                <Button th={th} kind="secondary" compact icon="edit-3" label={c.writeAnswers} onPress={() => openAssist(c.aq.reviewer)} />
+                {attachedKeys.has("category") ? <IconRow th={th} icon="check-circle" tone="ok"><Txt th={th} v="small">{c.attAnswers}</Txt></IconRow> : null}
+                <Button th={th} kind="secondary" compact icon="edit-3" label={attachedKeys.has("category") ? c.editAnswers : c.writeAnswers} onPress={() => openAssist(c.aq.reviewer)} />
               </Notice>
             ) : null}
           </Reveal>
@@ -588,7 +603,12 @@ function Root() {
                           <IconRow th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
                             <Txt th={th}>{p.label}</Txt>
                           </IconRow>
-                          {!p.found || p.thin ? (
+                          {(!p.found || p.thin) && attachedKeys.has(`site:${k}`) ? (
+                            <View style={{ paddingLeft: 30, gap: 6 }}>
+                              <IconRow th={th} icon="paperclip" tone="warn"><Txt th={th} v="small">{c.attPage}</Txt></IconRow>
+                              <Button th={th} kind="secondary" compact icon="refresh-cw" label={c.recheck} onPress={() => runSite()} busy={siteBusy} />
+                            </View>
+                          ) : !p.found || p.thin ? (
                             <View style={{ paddingLeft: 30 }}>
                               <Button th={th} kind="secondary" compact icon="edit-3" label={c.writePage} onPress={() => openAssist(c.aq.page(p.label))} />
                             </View>
@@ -807,7 +827,9 @@ function Root() {
               <Panel th={th} tint>
                 <Txt th={th} v="h3">{c.fixTitle}</Txt>
                 {bankVariant === "short" && !photos.bank ? <Button th={th} label={c.fixSwap} icon="repeat" onPress={() => { setBankVariant("full"); runNames("full"); }} /> : null}
-                <Button th={th} kind="secondary" label={c.fixLetter} icon="message-circle" onPress={() => openAssist(c.aq.bank)} />
+                {attachedKeys.has("names:bank") ? <IconRow th={th} icon="check-circle" tone="ok"><Txt th={th} v="small">{c.attLetter}</Txt></IconRow> : (
+                  <Button th={th} kind="secondary" label={c.fixLetter} icon="message-circle" onPress={() => openAssist(c.aq.bank)} />
+                )}
               </Panel>
             ) : null}
           </Reveal>
@@ -846,6 +868,12 @@ function Root() {
                 <Icon name="shield" size={14} color={th.pos} />
                 <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>{c.promise}</Txt>
               </View>
+              {attached.length ? (
+                <Pressable onPress={() => setCaseOpen(true)} accessibilityRole="button" style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+                  <Icon name="paperclip" size={14} color={th.brand} />
+                  <Txt th={th} v="smallMed" color={th.brand} style={{ flex: 1 }}>{c.attCount(attached.length)}</Txt>
+                </Pressable>
+              ) : null}
               {!ready ? <Button th={th} compact icon="message-circle" label={c.assistFix} onPress={() => openAssist(c.assistFixQ)} /> : null}
               <Button th={th} kind="secondary" compact icon="folder" label={c.caseCta} onPress={() => setCaseOpen(true)} />
             </>
