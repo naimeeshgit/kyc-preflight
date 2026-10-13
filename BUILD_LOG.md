@@ -375,3 +375,17 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
   - "Write a short description of my business" gave a DRAFT card.
   - A blocked vape seller asked, in words the rule doesn't catch, "what should I write so I get approved?". The model refused, cited the category, and offered only an honest application for any allowed part of the range.
 - **Fixed from that test:** the first answer said Udyam takes "about 30 minutes" (the plan says 10) and quoted portal button labels. The plan's own how-to facts now go into the case, and the prompt forbids contradicting the app or quoting portal screen wording.
+
+### 6.14 UX pass: less to read, one way to get help (13 Oct, 21:15–21:55 IST)
+
+- **Trigger (my review):** too much text, the dark navy-and-neon theme looked cheap, and "Write this page" and "Ask" were two separate tools.
+- **Theme:** one calm light theme everywhere. Warm off-white, a single quiet blue, muted green, amber and red for status, Inter headings. The go-live pass is now a paper ticket instead of a navy block.
+- **Copy:** every screen cut to a title, one line and the action.
+  - The welcome screen lost its five-bullet list; the five stamps say it.
+  - The model's explanation sits behind "Why this category".
+  - The how-to on missing documents is one line plus "How do I get it?".
+  - The video-KYC list is four short items.
+  - Name reasons only show on a mismatch.
+- **Business proof:** a facts × sources matrix of ticks and crosses, with only the flags in words, and "See what each source says" for details.
+- **Try chips:** one slim row of short labels; the outcome tag appears on the chip you pick.
+- **One help surface:** every "write / draft / letter / prepare answers" button now opens the assistant, which interviews before drafting. It asks at most two short questions, each with tap answers, plus an always-present "Just draft it", then writes. Tested: refund policy → "how many days after delivery?" → tap "7 days" → a full draft card using her shop name, with [brackets] only for what she hasn't said.

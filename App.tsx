@@ -906,7 +906,7 @@ function Root() {
         <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingTop: 18, gap: 14, paddingBottom: 28 }} keyboardShouldPersistTaps="handled">
           {screen}
         </ScrollView>
-        {step >= 1 && step <= 4 ? (
+        {step >= 1 && step <= 3 ? (
           <View pointerEvents="box-none" style={{ alignItems: "flex-end", paddingHorizontal: 14, marginTop: -58, marginBottom: 10, zIndex: 5 }}>
             <Pressable onPress={() => openAssist()} accessibilityRole="button" accessibilityLabel={c.assist.title}
               style={({ hovered }: any) => ({ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 10, paddingHorizontal: 14, borderRadius: r.pill, backgroundColor: hovered ? th.brandPress : th.brand, shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 })}>
