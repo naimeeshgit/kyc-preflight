@@ -1015,40 +1015,47 @@ function Root() {
 
 /** Facts × sources, each cell decided by rules. Mobile-first: one block per fact. */
 function ConsistencyGrid({ th, c, ev }: { th: Theme; c: Copy; ev: EvidenceResult }) {
+  const [open, setOpen] = useState(false);
   const tone: Tone = ev.grid.verdict;
   const short: Record<string, string> = { instagram: "Instagram", catalog: "Catalog", invoice: "Invoice" };
+  const sources = Object.keys(ev.grid.rows[0]?.cells || {});
+  const mark = (state: string) => state === "ok" ? ["check", th.pos, th.posTint] : state === "bad" ? ["x", th.neg, th.negTint] : state === "warn" ? ["alert-triangle", th.warn, th.warnTint] : ["minus", th.faint, th.sunken];
+  const flags = ev.grid.rows.flatMap((row) => Object.entries(row.cells).filter(([, cell]) => cell.state === "bad" || cell.state === "warn").map(([sid, cell]) => ({ key: row.key + sid, state: cell.state as Tone, text: `${short[sid] || sid}: ${cell.why}` })));
   return (
     <Panel th={th}>
-      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Txt th={th} v="h3">{c.gridTitle}</Txt>
-          <Txt th={th} v="small" color={th.muted}>{c.gridSub}</Txt>
-        </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <Txt th={th} v="h3" style={{ flex: 1 }}>{c.gridTitle}</Txt>
         <Status th={th} tone={tone} label={tone === "ok" ? c.gridOk : tone === "warn" ? c.gridWarn : c.gridBad} />
       </View>
-      {ev.grid.rows.map((row) => (
-        <View key={row.key} style={{ gap: 6, paddingTop: 10, borderTopWidth: 1, borderTopColor: th.line }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
-            <Txt th={th} v="smallMed">{row.label}</Txt>
-            <Txt th={th} v="tiny" color={th.muted} numberOfLines={1} style={{ flexShrink: 1, textAlign: "right" }}>{c.expected}: {row.expected}</Txt>
-          </View>
-          {Object.entries(row.cells).map(([sid, cell]) => {
-            const t: Tone = cell.state === "none" ? "warn" : (cell.state as Tone);
-            const [fg, bg] = toneColors(th, t);
-            return (
-              <View key={sid} style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
-                <View style={{ width: 70, paddingVertical: 2, paddingHorizontal: 6, borderRadius: 6, backgroundColor: cell.state === "none" ? th.sunken : bg }}>
-                  <Text style={{ fontFamily: font.bodySemi, fontSize: 10.5, color: cell.state === "none" ? th.faint : fg }} numberOfLines={1}>{short[sid] || sid}</Text>
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Txt th={th} v="small" color={cell.state === "none" ? th.faint : th.ink} numberOfLines={2}>{cell.value}</Txt>
-                  {cell.state === "bad" || cell.state === "warn" ? <Txt th={th} v="tiny" color={fg}>{cell.why}</Txt> : null}
-                </View>
-              </View>
-            );
-          })}
+      {/* Facts × sources at a glance */}
+      <View style={{ gap: 6 }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flex: 1 }} />
+          {sources.map((sid) => <Txt key={sid} th={th} v="tiny" color={th.muted} style={{ width: 62, textAlign: "center" }}>{short[sid] || sid}</Txt>)}
         </View>
-      ))}
+        {ev.grid.rows.map((row) => (
+          <View key={row.key} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 2 }}>
+            <Txt th={th} v="small" style={{ flex: 1 }}>{row.label}</Txt>
+            {sources.map((sid) => {
+              const [ic, fg, bg] = mark(row.cells[sid]?.state || "none");
+              return <View key={sid} style={{ width: 62, alignItems: "center" }}><View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}><Icon name={ic} size={13} color={fg} /></View></View>;
+            })}
+          </View>
+        ))}
+      </View>
+      {flags.length ? <View style={{ gap: 6 }}>{flags.map((f) => <IconRow key={f.key} th={th} icon={f.state === "bad" ? "x-circle" : "alert-triangle"} tone={f.state}><Txt th={th} v="small">{f.text}</Txt></IconRow>)}</View> : null}
+      <Pressable onPress={() => setOpen((v) => !v)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <Icon name={open ? "chevron-up" : "chevron-down"} size={14} color={th.muted} />
+        <Txt th={th} v="smallMed" color={th.muted}>{open ? c.gridHide : c.gridShow}</Txt>
+      </Pressable>
+      {open ? ev.grid.rows.map((row) => (
+        <View key={row.key} style={{ gap: 4, paddingTop: 8, borderTopWidth: 1, borderTopColor: th.line }}>
+          <Txt th={th} v="smallMed">{row.label} <Txt th={th} v="tiny" color={th.muted}>· {c.expected}: {row.expected}</Txt></Txt>
+          {Object.entries(row.cells).map(([sid, cell]) => (
+            <Txt key={sid} th={th} v="small" color={cell.state === "none" ? th.faint : th.muted} numberOfLines={2}>{short[sid] || sid}: {cell.value}</Txt>
+          ))}
+        </View>
+      )) : null}
     </Panel>
   );
 }
