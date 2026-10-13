@@ -20,6 +20,7 @@ Rules:
 - confidence is your confidence in the policy_id, from 0 to 1.
 - Report only facts the seller stated or clearly implied. Use null when unknown.
 - is_reseller is true when they buy goods from others to sell.
+- The explanation covers only the category decision. Do not mention fees, payment, documents or next steps; the app shows those separately.
 
 POLICY TABLE (policy_id | label | status):
 ${table}
