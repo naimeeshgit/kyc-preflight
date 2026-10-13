@@ -105,6 +105,7 @@ function Root() {
   const [evBusy, setEvBusy] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);
   const [assistOpen, setAssistOpen] = useState(false);
+  const [attached, setAttached] = useState<{ title: string; body: string; at: string }[]>([]);
   const [assistSeed, setAssistSeed] = useState<string | null>(null);
   const openAssist = (seed?: string) => { setAssistSeed(seed || null); setAssistOpen(true); };
 
@@ -384,9 +385,10 @@ function Root() {
       names: (names?.ai.comparisons || []).map((x) => ({ doc: x.doc, name: docs[x.doc] || "", verdict: x.verdict })),
       evidence: (evidence?.grid.flags || []).map((f) => ({ row: f.row, source: f.source, why: f.why })),
       evidenceRun: Boolean(evidence),
+      attached: attached.map((a) => a.title),
       pass: step >= 4 ? passRows.map((p) => ({ label: p.label, tone: p.tone })) : [],
     };
-  }, [names, brand, bizText, biz, entity, have, docPlan, siteMode, site, siteUrl, route, slotLabel, evidence, passRows, step]);
+  }, [names, brand, bizText, biz, entity, have, docPlan, siteMode, site, siteUrl, route, slotLabel, evidence, passRows, step, attached]);
   // First questions, picked from what is still open in her case.
   const assistStarters = useMemo(() => {
     const out: string[] = [];
@@ -405,6 +407,7 @@ function Root() {
 
   function restart() {
     setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null); setSiteMode(null); setEntity(null); setHave([]); setHaveDone(false); setEvPhotos({}); setEvMismatch(false); setEvidence(null);
+    setAttached([]);
     setPreset("priya"); setBizText(PRESETS.priya[lang]); setBrand(PRESETS.priya.shop || "Gulmohar Jewels"); setBrandDraft(PRESETS.priya.shop || "Gulmohar Jewels"); go(0);
   }
 
@@ -977,11 +980,14 @@ function Root() {
         ) : null}
       </Sheet>
       <Sheet th={th} wide={wide} visible={caseOpen} onClose={() => setCaseOpen(false)} title={c.caseTitle}>
-        <CaseFile th={th} c={c} biz={biz} bizText={bizText} ask={ask} entity={entity} plan={docPlan} site={siteMode === "site" ? site : null} names={names?.ai || null} route={route} slotLabel={slotLabel} evidence={evidence} rows={passRows} brand={brand} pan={pan} />
+        <CaseFile th={th} c={c} attached={attached} biz={biz} bizText={bizText} ask={ask} entity={entity} plan={docPlan} site={siteMode === "site" ? site : null} names={names?.ai || null} route={route} slotLabel={slotLabel} evidence={evidence} rows={passRows} brand={brand} pan={pan} />
       </Sheet>
       <Assistant th={th} t={c.assist} lang={lang} visible={assistOpen} onClose={() => setAssistOpen(false)} caseData={assistCase} starters={assistStarters}
         seed={assistSeed} onSeedUsed={() => setAssistSeed(null)} wide={wide} mic={(onText) => <MicButton th={th} lang={lang} onText={onText} />}
-        onLog={(title, json, ms, note) => addLog({ kind: note === "rule" ? "rule" : "ai", title, json, ms, note })} />
+        onLog={(title, json, ms, note) => addLog({ kind: note === "rule" ? "rule" : "ai", title, json, ms, note })}
+        attachedTitles={attached.map((a) => a.title)}
+        onAttach={(d) => { setAttached((cur) => [...cur.filter((a) => a.title !== d.title), { title: d.title, body: d.body, at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]); addLog({ kind: "rule", title: `Attached to application: ${d.title}`, json: { title: d.title, blanks: 0 } }); haptic("success"); }}
+        onDetach={(title) => setAttached((cur) => cur.filter((a) => a.title !== title))} />
       <Sheet th={th} wide={wide} visible={howOpen} onClose={() => setHowOpen(false)} title={c.howItWorks}>
         <HowItWorks th={th} step={step} log={log} srv={srv} mode={mode} setMode={setMode} live={live} />
       </Sheet>
@@ -1080,8 +1086,8 @@ function ConsistencyGrid({ th, c, ev }: { th: Theme; c: Copy; ev: EvidenceResult
 }
 
 /** The packet a reviewer receives: everything already checked, with the open items first. */
-function CaseFile({ th, c, biz, bizText, ask, entity, plan, site, names, route, slotLabel, evidence, rows, brand, pan }: {
-  th: Theme; c: Copy; biz: BizResult | null; bizText: string; ask: Ask | null; entity: string | null; plan: DocPlan | null; site: SiteResult | null;
+function CaseFile({ th, c, attached, biz, bizText, ask, entity, plan, site, names, route, slotLabel, evidence, rows, brand, pan }: {
+  th: Theme; c: Copy; attached: { title: string; body: string; at: string }[]; biz: BizResult | null; bizText: string; ask: Ask | null; entity: string | null; plan: DocPlan | null; site: SiteResult | null;
   names: NamesAI | null; route: string | null; slotLabel: string | null; evidence: EvidenceResult | null; rows: PassRow[]; brand: string; pan: string;
 }) {
   const open = rows.filter((r) => r.tone !== "ok");
@@ -1128,6 +1134,14 @@ function CaseFile({ th, c, biz, bizText, ask, entity, plan, site, names, route, 
             {evidence.grid.flags.map((f, i) => <Line key={i} k={`Flag · ${f.row}`} v={`${f.source}: ${f.why}`} tone={f.state === "bad" ? "bad" : "warn"} />)}
           </>
         ) : <Line k="—" v="Not run" />}
+      </Sec>
+      <Sec title="Attached by the seller">
+        {attached.length ? attached.map((a) => (
+          <View key={a.title} style={{ gap: 4 }}>
+            <Line k={`Added ${a.at}`} v={a.title} tone="ok" />
+            <Txt th={th} v="tiny" color={th.muted} numberOfLines={4} style={{ marginLeft: 120 }}>{a.body}</Txt>
+          </View>
+        )) : <Line k="—" v="Nothing attached" />}
       </Sec>
       {site ? (
         <Sec title="Website">

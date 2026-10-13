@@ -6,16 +6,17 @@ import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
 type Turn = AssistMsg & { draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+export type AssistCopy = { attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
  * documents so she never leaves the app. Verdicts stay with the rules; drafts are labelled.
  */
-export function Assistant({ th, t, lang, visible, onClose, caseData, starters, seed, onSeedUsed, mic, wide, onLog }: {
+export function Assistant({ th, t, lang, visible, onClose, caseData, starters, seed, onSeedUsed, mic, wide, onLog, attachedTitles = [], onAttach, onDetach }: {
   th: Theme; t: AssistCopy; lang: Lang; visible: boolean; onClose: () => void; caseData: AssistCase; starters: string[];
   seed: string | null; onSeedUsed: () => void; mic?: (onText: (s: string) => void) => React.ReactNode; wide?: boolean;
   onLog?: (title: string, json: unknown, ms?: number, note?: string) => void;
+  attachedTitles?: string[]; onAttach?: (d: { title: string; body: string }) => void; onDetach?: (title: string) => void;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
@@ -118,10 +119,34 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                         <Icon name="edit-3" size={13} color={th.warn} /><Txt th={th} v="smallMed" color={th.warn}>{t.blanks(n)}</Txt>
                       </View>) : null; })()}
                     <Txt th={th} v="tiny" color={th.faint} style={{ paddingHorizontal: 12, paddingBottom: 10 }}>{t.disclaimer}</Txt>
-                    <Pressable onPress={() => copy(i, m.draft!)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 10, borderTopWidth: 1, borderTopColor: th.line }}>
-                      <Icon name={copiedAt === i ? "check" : Platform.OS === "web" ? "copy" : "share-2"} size={15} color={th.brand} />
-                      <Txt th={th} v="smallMed" color={th.brand}>{copiedAt === i ? t.copied : Platform.OS === "web" ? t.copy : t.share}</Txt>
-                    </Pressable>
+                    {(() => {
+                      const d = m.draft!; const n = (d.body.match(/\[[^\]]+\]/g) || []).length; const isOn = attachedTitles.includes(d.title);
+                      return (
+                        <View style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: th.line }}>
+                          <Pressable onPress={() => copy(i, d)} accessibilityRole="button" style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 11, borderRightWidth: 1, borderRightColor: th.line }}>
+                            <Icon name={copiedAt === i ? "check" : Platform.OS === "web" ? "copy" : "share-2"} size={15} color={th.brand} />
+                            <Txt th={th} v="smallMed" color={th.brand}>{copiedAt === i ? t.copied : Platform.OS === "web" ? t.copy : t.share}</Txt>
+                          </Pressable>
+                          {onAttach ? (isOn ? (
+                            <Pressable onPress={() => onDetach?.(d.title)} accessibilityRole="button" style={{ flex: 1.4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 11, backgroundColor: th.posTint }}>
+                              <Icon name="check-circle" size={15} color={th.pos} />
+                              <Txt th={th} v="smallMed" color={th.pos}>{t.attachedOk}</Txt>
+                              <Txt th={th} v="tiny" color={th.muted}>· {t.remove}</Txt>
+                            </Pressable>
+                          ) : n ? (
+                            <Pressable onPress={() => send(t.fillAsk(n))} disabled={busy} accessibilityRole="button" style={{ flex: 1.4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 11, backgroundColor: th.warnTint }}>
+                              <Icon name="edit-3" size={15} color={th.warn} />
+                              <Txt th={th} v="smallMed" color={th.warn}>{t.fillFirst(n)}</Txt>
+                            </Pressable>
+                          ) : (
+                            <Pressable onPress={() => { onAttach(d); setTurns((cur) => [...cur, { role: "assistant", content: t.attachNote }]); toEnd(); }} accessibilityRole="button" style={({ hovered }: any) => ({ flex: 1.4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 11, backgroundColor: hovered ? th.brandPress : th.brand })}>
+                              <Icon name="upload" size={15} color="#fff" />
+                              <Text style={{ fontFamily: font.bodySemi, fontSize: 13.5, color: "#fff" }}>{t.attach}</Text>
+                            </Pressable>
+                          )) : null}
+                        </View>
+                      );
+                    })()}
                   </View>
                 ) : null}
               </View>
