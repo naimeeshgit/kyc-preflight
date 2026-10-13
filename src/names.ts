@@ -17,22 +17,22 @@ function lev(a: string, b: string) {
   return d[m][n];
 }
 
-/** Compare another document's name against the legal (PAN) name, word by word, order-insensitive. */
+/** Compare another document's name against the legal (PAN) name, word by word.
+ * Returned in the other document's own word order (so a surname-first Aadhaar reads as printed),
+ * with any PAN words it lacks appended as "missing". */
 export function compareNames(legal: string, other: string): Token[] {
   const base = tokenize(legal);
   const pool = tokenize(other);
-  const used = new Set<number>();
-  const out: Token[] = [];
+  const states: (TokenState | null)[] = pool.map(() => null);
+  const missing: string[] = [];
   for (const w of base) {
-    let idx = pool.findIndex((p, i) => !used.has(i) && p === w);
+    let idx = pool.findIndex((p, i) => states[i] === null && p === w);
     let state: TokenState = "match";
     if (idx < 0) {
-      idx = pool.findIndex((p, i) => !used.has(i) && ((p.length === 1 && p === w[0]) || (w.length >= 5 && lev(p, w) <= 2)));
+      idx = pool.findIndex((p, i) => states[i] === null && ((p.length === 1 && p === w[0]) || (w.length >= 5 && lev(p, w) <= 2)));
       state = "variant";
     }
-    if (idx < 0) out.push({ text: w, state: "missing" });
-    else { used.add(idx); out.push({ text: w, state }); }
+    if (idx < 0) missing.push(w); else states[idx] = state;
   }
-  pool.forEach((p, i) => { if (!used.has(i)) out.push({ text: p, state: "extra" }); });
-  return out;
+  return [...pool.map((p, i) => ({ text: p, state: states[i] ?? ("extra" as TokenState) })), ...missing.map((w) => ({ text: w, state: "missing" as TokenState }))];
 }

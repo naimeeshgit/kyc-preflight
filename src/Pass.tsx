@@ -35,16 +35,19 @@ export function GoLivePass({ th, title, sub, holder, shopLabel, shop, onEditShop
           <View style={{ flex: 1, height: 1, borderTopWidth: 1, borderStyle: "dashed", borderColor: th.navyMuted, opacity: 0.6 }} />
           <Text style={{ fontFamily: font.monoBold, fontSize: 13, color: th.navyInk, letterSpacing: 1.2 }}>LIVE</Text>
         </View>
-        <View style={{ flexDirection: "row", gap: 16 }}>
-          <View style={{ flex: 1.1, gap: 2 }}>
+        <View style={{ gap: 10 }}>
+          <View style={{ gap: 2 }}>
             <Text style={{ fontFamily: font.bodyMed, fontSize: 11.5, color: th.navyMuted }}>Merchant</Text>
-            <Text style={{ fontFamily: font.bodySemi, fontSize: 14.5, color: th.navyInk }} numberOfLines={1}>{holder}</Text>
+            <Text style={{ fontFamily: font.bodySemi, fontSize: 15, color: th.navyInk }}>{holder}</Text>
           </View>
-          <Pressable onPress={onEditShop} accessibilityRole="button" accessibilityLabel={`${shopLabel}: ${shop}. ${editLabel}`} style={{ flex: 1, gap: 2 }}>
-            <Text style={{ fontFamily: font.bodyMed, fontSize: 11.5, color: th.navyMuted }} numberOfLines={1}>{shopLabel}</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Text style={{ fontFamily: font.bodySemi, fontSize: 14.5, color: th.navyInk, flexShrink: 1 }} numberOfLines={1}>{shop}</Text>
-              <Icon name="edit-2" size={12} color={th.navyMuted} />
+          <Pressable onPress={onEditShop} accessibilityRole="button" accessibilityLabel={`${shopLabel}: ${shop}. ${editLabel}`} style={{ gap: 2, alignSelf: "flex-start" }}>
+            <Text style={{ fontFamily: font.bodyMed, fontSize: 11.5, color: th.navyMuted }}>{shopLabel}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Text style={{ fontFamily: font.bodySemi, fontSize: 15, color: th.navyInk }}>{shop}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.12)" }}>
+                <Icon name="edit-2" size={11} color={th.navyInk} />
+                <Text style={{ fontFamily: font.bodySemi, fontSize: 11.5, color: th.navyInk }}>{editLabel}</Text>
+              </View>
             </View>
           </Pressable>
         </View>
