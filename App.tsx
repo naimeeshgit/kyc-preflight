@@ -285,6 +285,22 @@ function Root() {
     } catch { setNamesErr(c.errPhotos); }
   }
 
+  /** Which registration a missing plan item is satisfied by. */
+  const docKeyFor = (itemKey: string) => itemKey === "bizproof" ? "udyam" : itemKey.startsWith("extra:") && /fssai/i.test(itemKey) ? "fssai" : itemKey;
+  /** Seller adds a certificate: from a photo, or the demo sample. Marks it held so the plan and pass update. */
+  async function uploadDoc(key: string, mode: "photo" | "sample"): Promise<boolean> {
+    if (mode === "photo") {
+      try {
+        const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.6 });
+        if (res.canceled || !res.assets?.[0]?.uri) return false;
+      } catch { return false; }
+    }
+    setHave((h) => (h.includes(key) ? h : [...h, key])); setHaveDone(true);
+    addLog({ kind: "rule", title: `Document added: ${DOCPLAN.HAVE[key]?.label || key}`, json: { key, source: mode === "sample" ? "sample certificate (demo)" : "seller photo" } });
+    haptic("success");
+    return true;
+  }
+
   async function pickEv(k: EvKey) {
     try {
       const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
@@ -676,6 +692,10 @@ function Root() {
                         <Icon name="message-circle" size={14} color={th.brand} />
                         <Txt th={th} v="smallMed" color={th.brand}>{c.askHow}</Txt>
                       </Pressable>
+                      <View style={{ flexDirection: "row", gap: 8, alignItems: "center", marginTop: 6 }}>
+                        <Button th={th} compact icon="upload" label={c.uploadCert} onPress={() => uploadDoc(docKeyFor(it.key), "photo")} />
+                        <Pressable onPress={() => uploadDoc(docKeyFor(it.key), "sample")} accessibilityRole="button"><Txt th={th} v="smallMed" color={th.muted}>{c.useSampleCert}</Txt></Pressable>
+                      </View>
                     </View>
                   ) : null}
                 </View>
@@ -1014,6 +1034,8 @@ function Root() {
         seed={assistSeed} onSeedUsed={() => setAssistSeed(null)} wide={wide} mic={(onText) => <MicButton th={th} lang={lang} onText={onText} />}
         onLog={(title, json, ms, note) => addLog({ kind: note === "rule" ? "rule" : "ai", title, json, ms, note })}
         attachedTitles={attached.map((a) => a.title)}
+        missingDocs={(docPlan?.items || []).filter((i) => i.status === "missing").map((i) => ({ key: docKeyFor(i.key), label: i.label }))}
+        onUploadDoc={uploadDoc}
         onAttach={(d) => { setAttached((cur) => [...cur.filter((a) => a.title !== d.title), { title: d.title, body: d.body, at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]); addLog({ kind: "rule", title: `Attached to application: ${d.title}`, json: { title: d.title, blanks: 0 } }); haptic("success"); }}
         onDetach={(title) => setAttached((cur) => cur.filter((a) => a.title !== title))} />
       <Sheet th={th} wide={wide} visible={howOpen} onClose={() => setHowOpen(false)} title={c.howItWorks}>

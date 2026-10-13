@@ -5,17 +5,18 @@ import type { Lang } from "./data";
 import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
-type Turn = AssistMsg & { draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { typeHere: string; useSuggested: string; edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+type Turn = AssistMsg & { upload?: { key: string; label: string; done?: boolean }; draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
+export type AssistCopy = { uploadHere: (label: string) => string; uploadPhoto: string; uploadSample: string; uploadDone: string; typeHere: string; useSuggested: string; edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
  * documents so she never leaves the app. Verdicts stay with the rules; drafts are labelled.
  */
-export function Assistant({ th, t, lang, visible, onClose, caseData, starters, seed, onSeedUsed, mic, wide, onLog, attachedTitles = [], onAttach, onDetach }: {
+export function Assistant({ th, t, lang, visible, onClose, caseData, starters, seed, onSeedUsed, mic, wide, onLog, attachedTitles = [], onAttach, onDetach, missingDocs = [], onUploadDoc }: {
   th: Theme; t: AssistCopy; lang: Lang; visible: boolean; onClose: () => void; caseData: AssistCase; starters: string[];
   seed: string | null; onSeedUsed: () => void; mic?: (onText: (s: string) => void) => React.ReactNode; wide?: boolean;
   onLog?: (title: string, json: unknown, ms?: number, note?: string) => void;
+  missingDocs?: { key: string; label: string }[]; onUploadDoc?: (key: string, mode: "photo" | "sample") => Promise<boolean>;
   attachedTitles?: string[]; onAttach?: (d: { title: string; body: string }) => void; onDetach?: (title: string) => void;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -32,6 +33,12 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
 
   async function send(text: string) {
     const q = text.trim(); if (!q || busy) return;
+    // "Upload my certificate": the app can take it right here, no model needed.
+    if (/upload|attach|add|jod|daal/i.test(q) && /udyam|gst|certificate|licen[cs]e|fssai|deed|proof|registration/i.test(q) && missingDocs.length && onUploadDoc) {
+      const want = missingDocs.find((d) => new RegExp(d.key, "i").test(q)) || missingDocs[0];
+      setTurns((cur) => [...cur, { role: "user", content: q }, { role: "assistant", content: t.uploadHere(want.label), upload: { key: want.key, label: want.label } }]);
+      setInput(""); toEnd(); return;
+    }
     const next: Turn[] = [...turns, { role: "user", content: q }];
     setTurns(next); setInput(""); setBusy(true); toEnd();
     try {
@@ -90,6 +97,22 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                   {m.guard ? <Txt th={th} v="tiny" color={th.muted}>Rule answer · no model</Txt> : null}
                   <Text selectable style={{ fontFamily: font.body, fontSize: 14.5, lineHeight: 21, color: th.ink }}>{m.content}</Text>
                 </View>
+                {m.upload ? (
+                  <View style={{ flexDirection: "row", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    {m.upload.done ? (
+                      <IconRow th={th} icon="check-circle" tone="ok"><Txt th={th} v="smallMed">{t.uploadDone}</Txt></IconRow>
+                    ) : (
+                      <>
+                        <Pressable onPress={async () => { if (await onUploadDoc?.(m.upload!.key, "photo")) setTurns((cur) => cur.map((x, k) => (k === i && x.upload ? { ...x, upload: { ...x.upload, done: true } } : x))); }} accessibilityRole="button" style={({ hovered }: any) => ({ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 9, paddingHorizontal: 14, borderRadius: r.pill, backgroundColor: hovered ? th.brandPress : th.brand })}>
+                          <Icon name="upload" size={15} color="#fff" /><Text style={{ fontFamily: font.bodySemi, fontSize: 13.5, color: "#fff" }}>{t.uploadPhoto}</Text>
+                        </Pressable>
+                        <Pressable onPress={async () => { if (await onUploadDoc?.(m.upload!.key, "sample")) setTurns((cur) => cur.map((x, k) => (k === i && x.upload ? { ...x, upload: { ...x.upload, done: true } } : x))); }} accessibilityRole="button" style={{ paddingVertical: 9, paddingHorizontal: 12 }}>
+                          <Txt th={th} v="smallMed" color={th.muted}>{t.uploadSample}</Txt>
+                        </Pressable>
+                      </>
+                    )}
+                  </View>
+                ) : null}
                 {m.checklist?.length ? (
                   <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface, overflow: "hidden" }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 9, backgroundColor: th.brandTint }}>
