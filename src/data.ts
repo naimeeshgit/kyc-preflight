@@ -71,12 +71,12 @@ export const PRESETS: Record<string, { label: string; en: string; hi: string; ta
     en: "I cook home-style lunch tiffins and deliver them to offices near Gachibowli. Customers pay monthly.",
     hi: "Main ghar ka khana banati hoon aur Gachibowli ke offices mein lunch tiffin deliver karti hoon. Customers monthly pay karte hain.",
   },
-  gaming: {
+  trading: {
     tag: "Asks a question", tone: "info",
-    label: "Cricket gaming app",
-    en: "I run an app where cricket fans pick players before each match and compete with friends.",
-    hi: "Mera ek app hai jahan cricket fans har match se pehle players chunte hain aur doston se compete karte hain.",
-    answers: { en: ["Just for fun, no money involved", "Users pay an entry fee and win cash prizes"], hi: ["Bas mazze ke liye, paise nahi lagte", "Users entry fee dete hain aur cash prize jeet-te hain"] },
+    label: "\"I do trading\"",
+    en: "I do trading from home.",
+    hi: "Main ghar se trading karta hoon.",
+    answers: { en: ["I buy and sell sarees wholesale", "I trade shares and crypto for my clients"], hi: ["Main sarees wholesale mein khareedta-bechta hoon", "Main clients ke liye shares aur crypto trade karta hoon"] },
   },
   vape: {
     tag: "Blocked: no fee", tone: "bad",
