@@ -32,7 +32,7 @@ Rules:
 
 CANDIDATES (policy_id | label | status — note for reviewed/blocked):
 ${table}
-none_of_these | Nothing above fits | needs_review
+none_of_these | Not a standard category | needs_review
 
 SELLER DESCRIPTION:
 """${String(text).slice(0, 1500)}"""

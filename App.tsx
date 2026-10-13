@@ -14,7 +14,7 @@ import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_CLASSIFY, 
 import { classify, DocInput, health, Health, readNames } from "./src/api";
 import { checkSite, draft as draftApi, Draft, EvidenceResult, readEvidence, SiteResult } from "./src/api";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const DOCPLAN = require("./shared/docplan") as { ENTITIES: Record<string, { label: string; hint: string }>; HAVE: Record<string, { label: string }>; plan: (i: { entity: string; have: string[]; extraDocs?: string[] }) => DocPlan };
+const DOCPLAN = require("./shared/docplan") as { ENTITIES: Record<string, { label: string; hint: string }>; HAVE: Record<string, { label: string }>; plan: (i: { entity: string; have: string[]; extraDocs?: string[]; reseller?: boolean }) => DocPlan };
 type DocPlan = { items: { key: string; label: string; status: "have" | "in_app" | "missing"; why?: string; how?: { what: string; time: string; how: string } }[]; ready: boolean; upgrade?: { title: string; body: string } };
 import { browserSpeechAvailable, startBrowserSpeech } from "./src/voice";
 import { compareNames, scoreNames, Token } from "./src/names";
@@ -362,7 +362,7 @@ function Root() {
     if (!entity || !biz) return null;
     const extra = [...(biz.policy.extraDocs || [])];
     const fssaiNeeded = extra.some((d) => /fssai/i.test(d));
-    return DOCPLAN.plan({ entity, have: [...have, ...(fssaiNeeded && have.includes("fssai") ? ["fssai"] : [])], extraDocs: extra });
+    return DOCPLAN.plan({ entity, have: [...have, ...(fssaiNeeded && have.includes("fssai") ? ["fssai"] : [])], extraDocs: extra, reseller: biz.ai.is_reseller === true && Boolean(biz.policy.resellerDoc) });
   }, [entity, have, biz]);
 
   /* Readiness: rules decide what the pass shows. */

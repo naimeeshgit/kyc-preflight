@@ -33,7 +33,7 @@ const HOW = {
  * @param {{entity: keyof ENTITIES, have: string[], extraDocs?: string[], category?: string}} input
  * @returns {{items: {key:string,label:string,status:"have"|"in_app"|"missing"|"optional",how?:object,why?:string}[], ready: boolean, upgrade?: {title:string, body:string}}}
  */
-function plan({ entity, have = [], extraDocs = [] }) {
+function plan({ entity, have = [], extraDocs = [], reseller = false }) {
   const H = new Set(have);
   const items = [];
   const add = (key, label, status, why, howKey) => items.push({ key, label, status, why, ...(howKey ? { how: HOW[howKey] } : {}) });
@@ -60,6 +60,9 @@ function plan({ entity, have = [], extraDocs = [] }) {
     add("bank", "Current account in the company's name", H.has("current") ? "have" : "missing", "Companies settle into a company account.", "current");
     if (H.has("gst")) add("gst", "GST certificate", "have", "Registered company.");
   }
+
+  // Resellers: reviewers ask where the goods come from.
+  if (reseller) add("invoice", "One purchase invoice from your supplier", "in_app", "Shows where your stock comes from. Add it with your business proof in step 3.");
 
   // Category extras from the taxonomy (FSSAI, drug licence...).
   for (const d of extraDocs) {

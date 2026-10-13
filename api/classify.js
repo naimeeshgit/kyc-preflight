@@ -27,7 +27,9 @@ function decide(ai, candidates, qa, text = "") {
   //    and no strong alternative with another status. No answer could change it, so don't ask.
   if (chosen && chosen.status === "not_supported" && !mixed && TRIPWIRE.test(text)) return { state: "decided", status: chosen.status, policy: chosen, why: "blocked_terms_agree" };
   // 1. The model asked a question and we have not asked before: ask.
-  if (ai.question && !alreadyAsked && conf < T_DECIDE) return { state: "ask", question: ai.question };
+  //    Never when blocked-domain words are present: no answer can make those acceptable, so a reviewer decides.
+  if (ai.question && !alreadyAsked && conf < T_DECIDE && !TRIPWIRE.test(text)) return { state: "ask", question: ai.question };
+  if (ai.question && !alreadyAsked && TRIPWIRE.test(text) && chosen && chosen.status !== "supported") return { state: "reviewer", why: "blocked_terms" };
   // 2. Nothing fits, or confidence too low after any question: a human reviewer decides.
   if (!chosen || ai.policy_id === "none_of_these" || conf < T_DECIDE) return { state: "reviewer", why: "low_confidence" };
   // 3. Candidates straddle supported/not: require stronger confidence, else reviewer.
