@@ -416,3 +416,12 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
   - "Prepare me for review" returns a readiness checklist ("Ready for review: 3 of 8 done") where each open item has a Fix button.
 - **Tested live (astrology):** 45 min → ₹500–1,000 → full refund 24 h before. The draft carried every answer. A follow-up request for an Instagram bio reused them, with one blank instead of seven.
 - **Fixed from the test:** question 4 repeated question 3, called her "she" and offered only Skip. The prompt now requires a real (1/N) count, no repeats, second person and at least 3 options. Skip and Just draft it are added server-side whenever a draft is in progress. A duplicated rule block from an earlier merge was consolidated.
+
+### 6.17 Attach from the chat (13 Oct, 22:20–22:40 IST)
+
+- **Built:** every draft card in the assistant has "Add to my application". It is locked while the draft has unfilled [brackets]: the button reads "Fill N blanks first" and starts the tap-through instead.
+  - Once added, it shows "Added · Remove".
+  - The chat confirms that the reviewer will see it in the case file and that it doesn't guarantee approval.
+  - The draft appears under "Attached by the seller" in the reviewer case file, and the assistant knows what is attached so it doesn't redo it.
+- **Fixed from the test:** the assistant left "[registered mobile number]" blank although the case has her mobile; the server now fills any phone placeholder from the case. It also repeated a question in the message that delivered the draft; the prompt now forbids that.
+- **Tested live:** shop description → "Fill 2 blanks first" → ₹500–1,000 → how orders come in → 0 blanks, phone filled → Add to my application → Added.
