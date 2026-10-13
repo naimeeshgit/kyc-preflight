@@ -14,6 +14,7 @@ import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, Cla
 import { classify, DocInput, health, Health, readNames } from "./src/api";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
+import { ckycSearch, captureFee, CkycSearchRequest } from "./src/adapters";
 import { GoLivePass, PassRow } from "./src/Pass";
 import { Button, Chip, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
 
@@ -155,14 +156,14 @@ function Root() {
     scrollDown();
   }
 
-  function runRoute() {
+  async function runRoute() {
     setRouteBusy(true); setRoute(null); setSlot(null);
-    setTimeout(() => {
-      const res = simFound ? "instant" : "video";
-      setRoute(res); setRouteBusy(false); haptic(res === "instant" ? "success" : "light");
-      addLog({ kind: "mock", title: "KYC registry lookup (mocked)", json: { pan: pan.slice(0, 3) + "•••" + pan.slice(-2), consent, record_found: simFound, route: res } });
-      scrollDown();
-    }, 900);
+    const req: CkycSearchRequest = { id_type: "PAN", id_number_masked: pan.slice(0, 3) + "•••" + pan.slice(-2), consent: { given: true, at: new Date().toISOString(), purpose: "merchant_onboarding_kyc" } };
+    const resp = await ckycSearch(req, "mock", { found: simFound, name: "PRIYA LAKSHMI REDDY" });
+    const res = resp.found ? "instant" : "video";
+    setRoute(res); setRouteBusy(false); haptic(res === "instant" ? "success" : "light");
+    addLog({ kind: "mock", title: "CKYC registry search (mock adapter, real request/response shape)", json: { request: req, response: resp, route_rule: "found → registry route; not found → Video KYC" } });
+    scrollDown();
   }
 
   async function pick(k: DocKey, from: "camera" | "gallery") {
@@ -503,7 +504,7 @@ function Root() {
     footer = (
       <>
         <Button th={th} label={ready ? c.payCta(inr(FEE_TOTAL)) : c.payBlocked} icon={ready ? "lock" : undefined} disabled={!ready}
-          onPress={() => { haptic("success"); addLog({ kind: "mock", title: "Payment and submission (simulated)", json: { amount_inr: FEE_TOTAL, charged_after_checks: true } }); go(5); }} />
+          onPress={async () => { haptic("success"); const req = { amount_paise: Math.round(FEE_TOTAL * 100), currency: "INR" as const, purpose: "kyc_processing_fee" as const, preflight_pass_id: "pf_" + Date.now().toString(36) }; const resp = await captureFee(req, "mock"); addLog({ kind: "mock", title: "Fee capture (mock adapter, real request/response shape)", json: { request: req, response: resp, gate: "called only after every stamp is green" } }); go(5); }} />
         <Txt th={th} v="tiny" color={th.faint} style={{ textAlign: "center" }}>{c.simulated}</Txt>
       </>
     );
