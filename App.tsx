@@ -708,7 +708,7 @@ function Root() {
           ))}
         </View>
         <Txt th={th} v="h3">{c.evTitle}</Txt>
-        <Txt th={th} v="small" color={th.muted}>{c.evBody}</Txt>
+        <Txt th={th} v="small" color={th.muted}>{entity && entity !== "individual" ? c.evBodyReg : c.evBody}</Txt>
         <View style={{ gap: 10 }}>
           {(["instagram", "catalog", "invoice"] as EvKey[]).map((k) => (
             <DocRow key={k} th={th} c={c} label={c.ev[k]} scanning={evBusy}
@@ -768,7 +768,7 @@ function Root() {
     const code = "PF-" + (pan.slice(-4) || "0000");
     screen = (
       <>
-        <Txt th={th} v="h1">{ready ? c.s4Title : c.s4TitleNot}</Txt>
+        <Txt th={th} v="h1">{ready ? c.s4Title : passRows.filter((x) => x.tone === "bad").length > 1 ? c.s4TitleNotN.replace("{n}", String(passRows.filter((x) => x.tone === "bad").length)) : c.s4TitleNot}</Txt>
         <GoLivePass th={th} canvasColor={th.canvas} title={c.passLabel} sub={c.passSub} holder="Priya Lakshmi Reddy" shopLabel={c.shop} shop={brand} editLabel={c.edit}
           onEditShop={() => { setBrandDraft(brand); setBrandOpen(true); }} rows={passRows} code={code}
           footer={(
@@ -1034,7 +1034,7 @@ function CaseFile({ th, c, biz, bizText, ask, entity, plan, site, names, route, 
       <Sec title="Business proof (cross-checked)">
         {evidence ? (
           <>
-            <Line k="Verdict" v={evidence.grid.verdict} tone={evidence.grid.verdict} />
+            <Line k="Verdict" v={evidence.grid.verdict === "ok" ? "Sources agree" : evidence.grid.verdict === "warn" ? "Needs a look" : "Sources don't agree"} tone={evidence.grid.verdict} />
             {evidence.sources.map((s) => <Line key={s.id} k={s.label} v={[s.facts.business_name, (s.facts.products || []).slice(0, 4).join(", ")].filter(Boolean).join(" · ") || "unreadable"} />)}
             {evidence.grid.flags.map((f, i) => <Line key={i} k={`Flag · ${f.row}`} v={`${f.source}: ${f.why}`} tone={f.state === "bad" ? "bad" : "warn"} />)}
           </>
