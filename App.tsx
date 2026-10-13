@@ -533,7 +533,7 @@ function Root() {
                       <View key={x.id} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                         <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: fg }} />
                         <Txt th={th} v="small" color={on ? th.ink : th.muted} style={{ flex: 1 }}>{x.label}{on ? " ✓" : ""}</Txt>
-                        <Text style={{ fontFamily: font.mono, fontSize: 11, color: th.faint }}>{x.score.toFixed(2)}</Text>
+                        <Text style={{ fontFamily: font.mono, fontSize: 11, color: th.faint }}>{typeof x.score === "number" ? x.score.toFixed(2) : ""}</Text>
                       </View>
                     );
                   })}
