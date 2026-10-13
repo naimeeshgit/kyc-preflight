@@ -44,21 +44,57 @@ export type NamesAI = {
 };
 
 /* Demo sellers */
-export const PRESETS: Record<string, { label: string; en: string; hi: string }> = {
+export type PathTone = "ok" | "warn" | "bad" | "info";
+/** Demo paths: each preset is chosen to show a different branch of the decision policy. */
+export const PRESETS: Record<string, { label: string; en: string; hi: string; tag: string; tone: PathTone; answers?: { en: string[]; hi: string[] } }> = {
   priya: {
+    tag: "Supported", tone: "ok",
     label: "Jewellery on Instagram",
     en: "I make handmade kundan and oxidised jewellery at home and sell it on Instagram and WhatsApp. No GST, no website yet.",
     hi: "Main ghar pe handmade kundan aur oxidised jewellery banati hoon, Instagram aur WhatsApp pe bechti hoon. GST nahi hai, website bhi nahi hai.",
   },
   tools: {
+    tag: "Reseller: invoice needed", tone: "info",
     label: "Tools on WhatsApp",
     en: "I resell hardware tools like drills and spanners on WhatsApp. I buy them from the wholesale market. No GST.",
     hi: "Main WhatsApp pe hardware tools resell karta hoon, drills, spanners. Wholesale market se kharidta hoon. GST nahi hai.",
   },
   astro: {
+    tag: "Needs review", tone: "warn",
     label: "Astrology readings",
     en: "I do online astrology and kundli readings on video call. Clients pay in advance.",
     hi: "Main online astrology aur kundli reading karta hoon video call pe. Clients advance mein pay karte hain.",
+  },
+  tiffin: {
+    tag: "Extra licence: FSSAI", tone: "info",
+    label: "Home tiffin service",
+    en: "I cook home-style lunch tiffins and deliver them to offices near Gachibowli. Customers pay monthly.",
+    hi: "Main ghar ka khana banati hoon aur Gachibowli ke offices mein lunch tiffin deliver karti hoon. Customers monthly pay karte hain.",
+  },
+  gaming: {
+    tag: "Asks a question", tone: "info",
+    label: "Cricket gaming app",
+    en: "I run an app where cricket fans pick players before each match and compete with friends.",
+    hi: "Mera ek app hai jahan cricket fans har match se pehle players chunte hain aur doston se compete karte hain.",
+    answers: { en: ["Just for fun, no money involved", "Users pay an entry fee and win cash prizes"], hi: ["Bas mazze ke liye, paise nahi lagte", "Users entry fee dete hain aur cash prize jeet-te hain"] },
+  },
+  vape: {
+    tag: "Blocked: no fee", tone: "bad",
+    label: "Vapes on Instagram",
+    en: "I sell disposable vapes and pod kits on Instagram with delivery across Hyderabad.",
+    hi: "Main Instagram pe disposable vapes aur pod kits bechta hoon, poore Hyderabad mein delivery.",
+  },
+  spirits: {
+    tag: "Disguised blocked item", tone: "bad",
+    label: "Diwali gift hampers",
+    en: "Curated Diwali gift hampers with dry fruits and imported spirits, delivered to your door.",
+    hi: "Diwali ke gift hampers, dry fruits aur imported spirits ke saath, ghar tak delivery.",
+  },
+  hindi: {
+    tag: "Hindi script", tone: "info",
+    label: "मैं साड़ियाँ बेचती हूँ",
+    en: "मैं घर पर हैंडलूम साड़ियाँ बुनती हूँ और इंस्टाग्राम पर बेचती हूँ।",
+    hi: "मैं घर पर हैंडलूम साड़ियाँ बुनती हूँ और इंस्टाग्राम पर बेचती हूँ।",
   },
 };
 
@@ -154,7 +190,16 @@ const en = {
   s1Title: "What do you sell, and where?",
   s1Body: "Describe it the way you'd tell a customer. English or Hinglish is fine.",
   s1Placeholder: "e.g. I sell handmade earrings on Instagram",
-  examples: "Examples",
+  examples: "Try a path: each shows a different outcome",
+  tryAnswer: "Try an answer",
+  trySite: "Try a site",
+  sitePaths: { complete: "Store with all pages", partial: "Store missing 3 pages", social: "Instagram link instead", real: "A real store" },
+  tryRoute: "Try a KYC route",
+  routePaths: { video: "Not in registry: video call", instant: "In registry: instant" },
+  tryNames: "Try a bank account",
+  bankPaths: { short: "Name missing a word", full: "Name matches PAN" },
+  tryEvidence: "Try the business proof",
+  evPaths: { ok: "Everything adds up", bad: "Catalog from another business" },
   s1Cta: "Check my category",
   s1Busy: "Reading your description",
   supported: "Supported", needs_review: "Needs a manual review", not_supported: "Not supported",
@@ -335,7 +380,16 @@ const hi: Copy = {
   s1Title: "Aap kya bechte hain, aur kahan?",
   s1Body: "Waise likhiye jaise customer ko batate hain. English ya Hinglish, dono chalega.",
   s1Placeholder: "jaise: main Instagram pe handmade earrings bechti hoon",
-  examples: "Udaharan",
+  examples: "Ek path chuniye: har ek ka nateeja alag hai",
+  tryAnswer: "Ek jawab chuniye",
+  trySite: "Ek site chuniye",
+  sitePaths: { complete: "Saare pages wala store", partial: "3 pages missing wala store", social: "Instagram link", real: "Ek asli store" },
+  tryRoute: "KYC route chuniye",
+  routePaths: { video: "Registry mein nahi: video call", instant: "Registry mein hai: turant" },
+  tryNames: "Bank account chuniye",
+  bankPaths: { short: "Naam mein ek shabd kam", full: "Naam PAN se match" },
+  tryEvidence: "Business proof chuniye",
+  evPaths: { ok: "Sab match karta hai", bad: "Kisi aur business ka catalog" },
   s1Cta: "Meri category check karein",
   s1Busy: "Aapka description padh rahe hain",
   supported: "Supported", needs_review: "Manual review hoga", not_supported: "Supported nahi",

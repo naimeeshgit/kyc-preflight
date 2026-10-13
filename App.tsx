@@ -10,7 +10,7 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } f
 import { TASAOrbiter_600SemiBold, TASAOrbiter_700Bold } from "@expo-google-fonts/tasa-orbiter";
 import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono";
 import { font, r, Theme, useTheme } from "./src/theme";
-import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, NAMES, inr, policyById, recordedClassify } from "./src/data";
+import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_CLASSIFY, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, NAMES, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
 import { checkSite, draft as draftApi, Draft, EvidenceResult, readEvidence, SiteResult } from "./src/api";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -22,7 +22,7 @@ import { Scorecard } from "./src/Scorecard";
 import { Landing } from "./src/Landing";
 import { ckycSearch, captureFee, CkycSearchRequest } from "./src/adapters";
 import { GoLivePass, PassRow } from "./src/Pass";
-import { Button, Chip, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
+import { Button, Chip, DemoPaths, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
 
 const SPECIMEN_IMG = {
   pan: require("./assets/specimens/pan.png"),
@@ -51,6 +51,9 @@ const haptic = (kind: "success" | "warning" | "light") => {
   if (kind === "light") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   else Haptics.notificationAsync(kind === "success" ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning).catch(() => {});
 };
+
+/** The demo stores are static pages on the deployed site, so the server-side check can always fetch them. */
+const DEMO_ORIGIN = "https://kyc-preflight.vercel.app";
 
 export default function App() {
   const [loaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, TASAOrbiter_600SemiBold, TASAOrbiter_700Bold, IBMPlexMono_500Medium, IBMPlexMono_600SemiBold });
@@ -146,7 +149,7 @@ function Root() {
     if (l === lang) return;
     setLang(l);
     if (preset) setBizText(PRESETS[preset][l]);
-    if (biz && biz.source === "rec" && preset) setBiz(buildBiz(recordedClassify(preset, l), l, "rec"));
+    if (biz && biz.source === "rec" && preset && REC_CLASSIFY[preset]) setBiz(buildBiz(recordedClassify(preset, l), l, "rec"));
     if (names && names.source === "rec" && names.recKey) setNames({ ai: REC_NAMES[names.recKey][l], source: "rec", recKey: names.recKey });
   };
 
@@ -171,7 +174,7 @@ function Root() {
       }
       catch (e: any) { note = `Live call failed (${e?.message || "error"}); used the recorded answer.`; }
     }
-    if (!ai && presetKey) ai = recordedClassify(presetKey, lang);
+    if (!ai && presetKey && REC_CLASSIFY[presetKey]) ai = recordedClassify(presetKey, lang);
     setBizBusy(false);
     if (!ai) {
       setBizErr(c.errNoAI);
@@ -224,8 +227,8 @@ function Root() {
     } catch { /* user cancelled */ }
   }
 
-  async function runSite() {
-    const url = siteUrl.trim(); if (!url) return;
+  async function runSite(override?: string) {
+    const url = (override ?? siteUrl).trim(); if (!url) return;
     setSiteBusy(true); setSite(null);
     try {
       const res = await checkSite(url, Boolean(biz && biz.policy.category === "ecommerce"));
@@ -410,6 +413,11 @@ function Root() {
             <MicButton th={th} lang={lang} onText={(t) => setAsk({ ...ask, answer: t })} />
           </View>
           <Txt th={th} v="small" color={th.muted}>{c.askWhy}</Txt>
+          {preset && PRESETS[preset].answers ? (
+            <DemoPaths th={th} title={c.tryAnswer} paths={PRESETS[preset].answers![lang].map((a, i) => ({
+              key: String(i), label: a, on: ask.answer === a, onPress: () => { const q = { ...ask, answer: a }; setAsk(q); runClassify(q); },
+            }))} />
+          ) : null}
         </Panel>
       </Reveal>
     ) : null;
@@ -434,14 +442,10 @@ function Root() {
                 <MicButton th={th} lang={lang} onText={(t) => { setBizText(t); setPreset(null); }} />
               </View>
             </View>
-            <View style={{ gap: 8 }}>
-              <Txt th={th} v="smallMed" color={th.muted}>{c.examples}</Txt>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                {Object.entries(PRESETS).map(([k, p]) => (
-                  <Chip key={k} th={th} label={p.label} on={preset === k} onPress={() => { setPreset(k); setBizText(p[lang]); setBiz(null); setBizErr(null); }} />
-                ))}
-              </View>
-            </View>
+            <DemoPaths th={th} title={c.examples} paths={Object.entries(PRESETS).map(([k, p]) => ({
+              key: k, label: p.label, tag: p.tag, tone: p.tone, on: preset === k,
+              onPress: () => { setPreset(k); setBizText(p[lang]); setBiz(null); setBizErr(null); setAsk(null); },
+            }))} />
           </>
         ) : (
           <Answered th={th} label={c.s1Title} value={bizText} onEdit={() => { setBiz(null); setAsk(null); setSite(null); setSiteMode(null); }} editLabel={c.edit} />
@@ -524,8 +528,17 @@ function Root() {
                       <TextInput value={siteUrl} onChangeText={(v) => { setSiteUrl(v); setSite(null); }} placeholder={c.sitePlaceholder} placeholderTextColor={th.faint} autoCapitalize="none" autoCorrect={false} keyboardType="url" accessibilityLabel={c.siteTitle}
                         style={{ minHeight: 44, paddingHorizontal: 12, fontFamily: font.body, fontSize: 15, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }} />
                     </View>
-                    <Button th={th} kind="secondary" compact label={c.siteCta} onPress={runSite} busy={siteBusy} disabled={!siteUrl.trim() || siteBusy} />
+                    <Button th={th} kind="secondary" compact label={c.siteCta} onPress={() => runSite()} busy={siteBusy} disabled={!siteUrl.trim() || siteBusy} />
                   </View>
+                  <DemoPaths th={th} title={c.trySite} paths={([
+                    ["complete", `${DEMO_ORIGIN}/demo-shop/complete/index.html`, "ok"],
+                    ["partial", `${DEMO_ORIGIN}/demo-shop/partial/index.html`, "bad"],
+                    ["social", "instagram.com/gulmohar.jewels", "info"],
+                    ["real", "boat-lifestyle.com", "info"],
+                  ] as const).map(([k, url, tone]) => ({
+                    key: k, label: c.sitePaths[k], tag: url.replace(/^https?:\/\//, "").replace(/\/index\.html$/, ""), tone, on: siteUrl === url,
+                    onPress: () => { setSiteUrl(url); runSite(url); },
+                  }))} />
                   <Pressable onPress={() => setSiteMode(null)} accessibilityRole="button"><Txt th={th} v="smallMed" color={th.brand}>{c.q2Back}</Txt></Pressable>
                   {siteBusy ? <Thinking th={th} label={c.siteBusy} /> : null}
                 </Panel>
@@ -677,10 +690,10 @@ function Root() {
             </Panel>
           </Reveal>
         ) : null}
-        <Pressable onPress={() => { setSimFound(!simFound); setRoute(null); setSlot(null); }} accessibilityRole="switch" accessibilityState={{ checked: simFound }} style={{ flexDirection: "row", gap: 8, alignItems: "center", alignSelf: "flex-start", paddingVertical: 4, opacity: 0.8 }}>
-          <Icon name={simFound ? "toggle-right" : "toggle-left"} size={20} color={simFound ? th.brand : th.faint} />
-          <Txt th={th} v="small" color={th.muted}>{c.simFound}</Txt>
-        </Pressable>
+        <DemoPaths th={th} title={c.tryRoute} paths={(["video", "instant"] as const).map((v) => ({
+          key: v, label: c.routePaths[v], tone: v === "instant" ? "ok" : "info", on: simFound === (v === "instant"),
+          onPress: () => { setSimFound(v === "instant"); setRoute(null); setSlot(null); },
+        }))} />
       </>
     );
     footer = !route
@@ -718,10 +731,14 @@ function Root() {
               onSample={evPhotos[k] ? () => { setEvPhotos((p) => { const n = { ...p }; delete n[k]; return n; }); setEvidence(null); } : undefined} />
           ))}
         </View>
-        <Pressable onPress={() => { setEvMismatch((v) => !v); setEvidence(null); }} accessibilityRole="switch" accessibilityState={{ checked: evMismatch }} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Icon name={evMismatch ? "toggle-right" : "toggle-left"} size={18} color={evMismatch ? th.brand : th.faint} />
-          <Txt th={th} v="small" color={th.muted}>{c.evMismatchToggle}</Txt>
-        </Pressable>
+        <DemoPaths th={th} title={c.tryNames} paths={(["short", "full"] as const).map((v) => ({
+          key: v, label: c.bankPaths[v], tone: v === "full" ? "ok" : "bad", on: !photos.bank && bankVariant === v,
+          onPress: () => { setPhotos((p) => { const n = { ...p }; delete n.bank; return n; }); setBankVariant(v); setNames(null); },
+        }))} />
+        <DemoPaths th={th} title={c.tryEvidence} paths={(["ok", "bad"] as const).map((v) => ({
+          key: v, label: c.evPaths[v], tone: v === "ok" ? "ok" : "bad", on: !evPhotos.catalog && evMismatch === (v === "bad"),
+          onPress: () => { setEvPhotos((p) => { const n = { ...p }; delete n.catalog; return n; }); setEvMismatch(v === "bad"); setEvidence(null); },
+        }))} />
         <Txt th={th} v="small" color={th.faint}>{c.samplesNote}</Txt>
         {namesBusy || evBusy ? <Thinking th={th} label={c.s3BusyAll} /> : null}
         {namesErr ? <Notice th={th} tone="warn" title={namesErr} /> : null}
@@ -924,6 +941,10 @@ function Root() {
                 <Legend th={th} kind="ai" text="AI reads the business description and document photos" />
                 <Legend th={th} kind="rule" text={`Rules decide: a ${TAX.rows}-row policy taxonomy, a scored name-match engine, fees and the pay gate`} />
                 <Legend th={th} kind="mock" text="Registry, penny drop and payment are mocked" />
+              </View>
+              <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: 10, borderRadius: r.md, borderWidth: 1, borderStyle: "dashed", borderColor: th.line }}>
+                <Icon name="shuffle" size={14} color={th.muted} />
+                <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>Every screen has a dashed "Try a path" box. Tap one to see another outcome: blocked, needs review, a clarifying question, an extra licence, missing website pages, a video KYC call, a bank name mismatch or a catalog that doesn't add up.</Txt>
               </View>
               <Button th={th} kind="secondary" compact icon="cpu" label="See how it works" onPress={() => setHowOpen(true)} />
               <Txt th={th} v="tiny" color={th.faint}>Concept prototype for the Razorpay × ISB Build Challenge. Not a Razorpay product. The seller and documents are fictional.</Txt>
