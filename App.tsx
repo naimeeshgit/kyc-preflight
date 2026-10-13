@@ -122,7 +122,11 @@ function Root() {
     }
     if (!ai && presetKey) ai = recordedClassify(presetKey, lang);
     setBizBusy(false);
-    if (!ai) { setBizErr(c.errNoAI); return; }
+    if (!ai) {
+      setBizErr(c.errNoAI);
+      addLog({ kind: "ai", title: "Description → category failed", note: note || "Live AI is off", json: { error: note || "Live AI is off and no recorded answer exists for this text" } });
+      return;
+    }
     const res = buildBiz(ai, lang, source);
     setBiz(res);
     haptic(res.status === "supported" ? "success" : "warning");
@@ -170,7 +174,11 @@ function Root() {
     }
     if (!ai && !anyPhoto) ai = REC_NAMES[variant][lang];
     setNamesBusy(false);
-    if (!ai) { setNamesErr(c.errPhotos); return; }
+    if (!ai) {
+      setNamesErr(c.errPhotos);
+      addLog({ kind: "ai", title: "Read names failed", note: note || "Live AI is off", json: { error: note || "Live AI is off and uploaded photos have no recorded answer" } });
+      return;
+    }
     setNames({ ai, source, recKey: source === "rec" ? variant : undefined });
     haptic(ai.comparisons.some((x) => x.verdict === "likely_fail") ? "warning" : "success");
     addLog({ kind: source === "live" ? "ai" : "rec", title: "Read names from documents (vision) and compare", ms, note: [model, note].filter(Boolean).join(" · "), json: ai });
