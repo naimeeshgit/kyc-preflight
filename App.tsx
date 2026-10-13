@@ -396,7 +396,8 @@ function Root() {
     if (bankVerdict && bankVerdict !== "match") out.push(c.aq.bank);
     if ((evidence?.grid.flags || []).some((f) => f.state === "bad")) out.push(c.aq.evidence);
     if (route === "video") out.push(c.aq.video);
-    out.push(c.aq.describe, c.aq.fee);
+    if (biz?.status !== "not_supported") out.push(c.aq.describe);
+    out.push(c.aq.fee);
     return Array.from(new Set(out)).slice(0, 5);
   }, [biz, docPlan, site, bankVerdict, evidence, route, c]);
 

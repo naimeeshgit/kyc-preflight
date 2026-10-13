@@ -359,3 +359,19 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
 - **Then the real root cause:** vapes still got a question. The call log showed the tobacco row was never retrieved. The stemmer cut "vapes" to "vap" but left the row's keyword "vape" whole, so the two never met. Same bug for "sarees" vs "saree". The fix strips plurals and -ing, then a trailing "e", identically for queries and rows. Offline recall@8 on the Latin-script cases went from 94.3% to 95.0%.
 - **Eval after both fixes (live, 146 cases):** **91.1%** told the right status; **0 / 76** false green; **0 / 70** false red; **14 / 14** adversarial; recall@8 **95.2%** (was 94.5%); 20.5% asked or deferred. Vapes now go straight to "Not supported, don't pay the fee", with no question.
 - **Every path re-walked live:** supported (jewellery); needs review (astrology); asks → branches (trading: wholesale → review, crypto → blocked); blocked (vapes); hidden blocked → no green (spirits hamper); FSSAI added to the plan (tiffin); Hindi script → women's clothing, supported; demo store partial → 3 pages missing with "Write this page"; demo store complete → all 5 found; bank and evidence chips as in §6.11.
+
+### 6.13 An assistant inside the app, so nobody leaves midway (13 Oct, 20:50–21:15 IST)
+
+- **Trigger (my call):** every fix so far was one button for one known problem. Real sellers have the next question ("what do I write under activity on Udyam?", "can you write my product list?") and today they leave the app for Google, a CA or an email thread, and many don't come back.
+- **Built:** "Ask Pre-flight", a chat on every step, plus contextual entry points: "Ask how, step by step" on each missing document, and "Fix these with the assistant" on a pass that isn't ready.
+  - It is **grounded in her case**, not general chat. Every call carries the category row and status, entity, document plan (with the app's own how-to facts), channel, missing pages, KYC route, name verdicts, evidence flags and pass rows. The first questions offered are picked from what is still open.
+  - **Drafts appear inline** as labelled DRAFT cards with Copy: business descriptions, policy pages, bank letters, reviewer answers, declarations.
+- **Guardrails, three layers:**
+  1. Rule first: a blocked category plus wording like "reword / list it as / say I sell / hide" gets a fixed answer with no model call.
+  2. Prompt: never predict or change a verdict, never reword a restricted business, never explain risk signals, [brackets] for unknowns, no invented registrations.
+  3. The UI says what it is: "Answers from your case. Drafts are labelled; checks are still decided by the rules."
+- **Tested live:**
+  - "Ask how" on the Udyam gap gave steps using her PAN name and shop name.
+  - "Write a short description of my business" gave a DRAFT card.
+  - A blocked vape seller asked, in words the rule doesn't catch, "what should I write so I get approved?". The model refused, cited the category, and offered only an honest application for any allowed part of the range.
+- **Fixed from that test:** the first answer said Udyam takes "about 30 minutes" (the plan says 10) and quoted portal button labels. The plan's own how-to facts now go into the case, and the prompt forbids contradicting the app or quoting portal screen wording.
