@@ -6,7 +6,7 @@ import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
 type Turn = AssistMsg & { draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+export type AssistCopy = { edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
@@ -22,6 +22,8 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [copiedAt, setCopiedAt] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
+  const editBody = (i: number, body: string) => setTurns((cur) => cur.map((x, k) => (k === i && x.draft ? { ...x, draft: { ...x.draft, body } } : x)));
   const scroll = useRef<ScrollView>(null);
   const toEnd = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 80);
 
@@ -112,11 +114,22 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                       <Txt th={th} v="smallMed" color={th.brand} style={{ flex: 1 }}>{m.draft.title}</Txt>
                       <Text style={{ fontFamily: font.bodySemi, fontSize: 11, color: th.brand, borderWidth: 1, borderColor: th.brand, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1 }}>{t.draftLabel}</Text>
                     </View>
-                    <Text selectable style={{ padding: 12, fontFamily: font.body, fontSize: 13.5, lineHeight: 20, color: th.ink }}>{m.draft.body}</Text>
+                    {editing === i ? (
+                      <TextInput value={m.draft.body} onChangeText={(v) => editBody(i, v)} multiline autoFocus accessibilityLabel={m.draft.title}
+                        style={{ margin: 10, padding: 10, minHeight: 160, borderWidth: 1.5, borderColor: th.brand, borderRadius: r.md, fontFamily: font.body, fontSize: 13.5, lineHeight: 20, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }} />
+                    ) : (
+                      <Pressable onPress={() => setEditing(i)} accessibilityRole="button" accessibilityLabel={t.edit}>
+                        <Text style={{ padding: 12, fontFamily: font.body, fontSize: 13.5, lineHeight: 20, color: th.ink }}>{m.draft.body}</Text>
+                      </Pressable>
+                    )}
+                    <Pressable onPress={() => setEditing(editing === i ? null : i)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingBottom: 8 }}>
+                      <Icon name={editing === i ? "check" : "edit-2"} size={13} color={th.brand} />
+                      <Txt th={th} v="smallMed" color={th.brand}>{editing === i ? t.doneEditing : t.edit}</Txt>
+                    </Pressable>
                     {m.draft.notes.length ? <View style={{ paddingHorizontal: 12, paddingBottom: 10, gap: 4 }}>{m.draft.notes.map((n, k) => <IconRow key={k} th={th} icon="alert-circle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}</View> : null}
                     {(() => { const n = (m.draft.body.match(/\[[^\]]+\]/g) || []).length; return n ? (
                       <View style={{ marginHorizontal: 12, marginBottom: 10, flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: r.md, backgroundColor: th.warnTint }}>
-                        <Icon name="edit-3" size={13} color={th.warn} /><Txt th={th} v="smallMed" color={th.warn}>{t.blanks(n)}</Txt>
+                        <Icon name="edit-3" size={13} color={th.warn} /><Txt th={th} v="smallMed" color={th.warn} style={{ flex: 1 }}>{t.blanks(n)} · {t.typeHint}</Txt>
                       </View>) : null; })()}
                     <Txt th={th} v="tiny" color={th.faint} style={{ paddingHorizontal: 12, paddingBottom: 10 }}>{t.disclaimer}</Txt>
                     {(() => {
