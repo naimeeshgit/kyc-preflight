@@ -16,6 +16,7 @@ import { checkSite, SiteResult } from "./src/api";
 import { browserSpeechAvailable, startBrowserSpeech } from "./src/voice";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
+import { Landing } from "./src/Landing";
 import { ckycSearch, captureFee, CkycSearchRequest } from "./src/adapters";
 import { GoLivePass, PassRow } from "./src/Pass";
 import { Button, Chip, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
@@ -693,11 +694,12 @@ function Root() {
     return (
       <View style={{ flex: 1, backgroundColor: th.canvas }}>
         <StatusBar style={th.dark ? "light" : "dark"} />
-        <ScrollView contentContainerStyle={{ minHeight: "100%", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <View style={{ flexDirection: "row", gap: 56, alignItems: "center", maxWidth: 1040, width: "100%", justifyContent: "center" }}>
+        <ScrollView contentContainerStyle={{ alignItems: "center" }}>
+          <View style={{ flexDirection: "row", gap: 56, alignItems: "center", maxWidth: 1040, width: "100%", justifyContent: "center", minHeight: Math.max(phoneH + 48, height), padding: 24 }}>
             <View style={{ width: 340, gap: 18 }}>
               <Txt th={th} v="h1" style={{ fontSize: 34, lineHeight: 40 }}>KYC Pre-flight</Txt>
-              <Txt th={th} color={th.muted}>New sellers pay ₹199 for KYC and often learn only afterwards that their category, KYC route or bank name won't pass. Pre-flight runs those checks first, in about 90 seconds, inside the merchant app.</Txt>
+              <Txt th={th} color={th.muted}>New sellers pay ₹199 for KYC and often learn only afterwards that their category, bank name, website or KYC route won't pass. Pre-flight runs those checks first, in about 90 seconds, inside the merchant app.</Txt>
+              <Txt th={th} v="smallMed" color={th.brand}>Try it on the phone →  Scroll for the evidence ↓</Txt>
               <View style={{ gap: 10 }}>
                 <Legend th={th} kind="ai" text="AI reads the business description and document photos" />
                 <Legend th={th} kind="rule" text={`Rules decide: a ${TAX.rows}-row policy taxonomy, a scored name-match engine, fees and the pay gate`} />
@@ -710,6 +712,7 @@ function Root() {
               {app}
             </View>
           </View>
+          <Landing th={th} onHow={() => setHowOpen(true)} />
         </ScrollView>
         {sheets}
       </View>
