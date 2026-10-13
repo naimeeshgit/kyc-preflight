@@ -667,7 +667,7 @@
   "label": "Weapons and ammunitions",
   "status": "not_supported",
   "reason": "Terms §17: firearms, ammunition, knives, armaments",
-  "keywords": "knife gun airgun ammunition pepper spray"
+  "keywords": "knife knives gun guns airgun airsoft rifle pistol ammunition bullets pepper spray tactical"
  },
  {
   "id": "ecommerce.stamps_and_coins_stores",
@@ -1039,7 +1039,7 @@
   "label": "Liquor stores",
   "status": "not_supported",
   "reason": "Terms §17: alcohol and alcoholic beverages",
-  "keywords": "wine beer whisky daru sharab liquor"
+  "keywords": "wine beer whisky whiskey vodka rum gin spirits liquor alcohol daru sharab imported bottles"
  },
  {
   "id": "ecommerce.boat_dealers",
@@ -2483,7 +2483,7 @@
   "extraDocs": [
    "FSSAI registration or licence"
   ],
-  "keywords": "beer wine liquor bar sharab daru"
+  "keywords": "beer wine liquor spirits whisky bar pub brewery sharab daru"
  },
  {
   "id": "food.restaurant_search_and_booking",

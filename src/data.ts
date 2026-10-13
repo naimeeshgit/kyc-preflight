@@ -34,7 +34,7 @@ export type Candidate = { id: string; label: string; categoryLabel: string; stat
 /** The server's deterministic decision after the model's reading. */
 export type Decision =
   | { state: "ask"; question: string }
-  | { state: "reviewer"; why: "low_confidence" | "mixed_candidates" }
+  | { state: "reviewer"; why: "low_confidence" | "mixed_candidates" | "blocked_terms" }
   | { state: "decided"; status: Status; policy: Policy };
 export type Verdict = "match" | "likely_fail" | "unclear";
 export type NamesAI = {
@@ -167,6 +167,7 @@ const en = {
   reviewNote: "A reviewer will look at this category by hand. You'll know where you stand before you're charged anything more.",
   lowConf: "We're not sure which category fits. A reviewer will confirm it.",
   mixedConf: "Your description sits between categories with different rules. A reviewer will confirm it rather than us guessing.",
+  blockedTerms: "Something in your description touches a restricted area. A reviewer will confirm the category before you pay anything.",
   askTitle: "One question first",
   askPlaceholder: "Type your answer",
   askWhy: "Your answer changes the outcome, so we ask instead of guessing.",
@@ -288,6 +289,7 @@ const hi: Copy = {
   reviewNote: "Is category ko reviewer haath se dekhenge. Aur kuch charge hone se pehle aapko pata rahega.",
   lowConf: "Kaunsi category fit hogi, pakka nahi. Reviewer confirm karenge.",
   mixedConf: "Aapka description aisi categories ke beech hai jinke rules alag hain. Hum guess nahi karenge, reviewer confirm karenge.",
+  blockedTerms: "Aapke description mein kuch restricted area se juda hai. Kuch bhi pay karne se pehle reviewer category confirm karenge.",
   askTitle: "Pehle ek sawaal",
   askPlaceholder: "Apna jawab likhiye",
   askWhy: "Aapke jawab se result badalta hai, isliye guess karne ki jagah pooch rahe hain.",

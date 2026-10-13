@@ -12,7 +12,11 @@ const T_DECIDE = 0.6;   // below this we do not state a verdict
 const T_MIXED = 0.75;   // a strong alternative with a different status needs this much confidence to decide without a human
 const STRONG_ALT = 0.6; // relative retrieval score that makes an alternative "strong"
 
-function decide(ai, candidates, qa) {
+// Defence in depth: words that belong to blocked domains. If any appear and the chosen row is
+// "supported", a human decides. This never blocks anyone; it only stops a green stamp.
+const TRIPWIRE = /\b(spirits?|whisk(e)?y|vodka|rum|gin|beer|wine|liquor|alcohol|sharab|daru|tobacco|cigarettes?|cigars?|vape|vapour|e-?cig\w*|hookah|molasses|gutka|beedi|bet(ting|s)?|satta|casino|rummy|poker|teen patti|lottery|lucky draw|jackpot|crypto\w*|bitcoin|usdt|nft|token|airsoft|rifle|pistol|gun|knives|knife|ammunition|escort|adult|sex\w*|intimate|dropship\w*|drop-?ship\w*|downline|mlm|pyramid|guaranteed returns?|double your money|prediction market|real[- ]money|cash prizes?)\b/i;
+
+function decide(ai, candidates, qa, text = "") {
   const chosen = POLICY.find((p) => p.id === ai.policy_id) || null;
   // Mixed = a strong alternative (retrieval score ≥ STRONG_ALT, not the chosen row) carries a different status.
   const mixed = Boolean(chosen) && candidates.some((c) => c.id !== chosen.id && c.score >= STRONG_ALT && c.status !== chosen.status);
@@ -25,7 +29,9 @@ function decide(ai, candidates, qa) {
   if (!chosen || ai.policy_id === "none_of_these" || conf < T_DECIDE) return { state: "reviewer", why: "low_confidence" };
   // 3. Candidates straddle supported/not: require stronger confidence, else reviewer.
   if (mixed && conf < T_MIXED) return { state: "reviewer", why: "mixed_candidates" };
-  // 4. Decided by the taxonomy row, never by the model.
+  // 4. Blocked-domain words in the description with a "supported" row chosen: a human decides.
+  if (chosen.status === "supported" && TRIPWIRE.test(text)) return { state: "reviewer", why: "blocked_terms" };
+  // 5. Decided by the taxonomy row, never by the model.
   return { state: "decided", status: chosen.status, policy: chosen };
 }
 
@@ -52,7 +58,7 @@ module.exports = async (req, res) => {
       { maxTokens: 1024, tool: SCHEMAS.classify(candidates.map((c) => c.id)) },
     );
     if (json.policy_id !== "none_of_these" && !candidates.some((c) => c.id === json.policy_id)) json.policy_id = "none_of_these";
-    const decision = decide(json, candidates, qa);
+    const decision = decide(json, candidates, qa, query);
     return res.status(200).json({
       ai: json, decision, model, ms: Date.now() - started,
       candidates: candidates.map(({ id, label, categoryLabel, status, score, hits }) => ({ id, label, categoryLabel, status, score, hits })),

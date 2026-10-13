@@ -28,7 +28,7 @@ type DocKey = "pan" | "aadhaar" | "bank";
 type Photo = { uri: string; base64: string; mediaType: string };
 type LogKind = "ai" | "rec" | "rule" | "mock";
 type LogItem = { id: number; kind: LogKind; title: string; at: string; ms?: number; note?: string; json: unknown };
-type BizResult = { ai: ClassifyAI; policy: Policy; status: PStatus; lowConf: boolean; reviewerWhy?: "low_confidence" | "mixed_candidates"; docs: string[]; website: boolean; source: "live" | "rec"; candidates?: Candidate[] };
+type BizResult = { ai: ClassifyAI; policy: Policy; status: PStatus; lowConf: boolean; reviewerWhy?: "low_confidence" | "mixed_candidates" | "blocked_terms"; docs: string[]; website: boolean; source: "live" | "rec"; candidates?: Candidate[] };
 type Ask = { question: string; answer: string };
 
 const haptic = (kind: "success" | "warning" | "light") => {
@@ -315,7 +315,7 @@ function Root() {
                 <Status th={th} tone={st === "supported" ? "ok" : st === "needs_review" ? "warn" : "bad"} label={c[biz.status]} />
               </View>
               <Txt th={th}>{biz.ai.explanation}</Txt>
-              {biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.reviewerWhy === "mixed_candidates" ? c.mixedConf : c.lowConf}</Txt> : null}
+              {biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.reviewerWhy === "mixed_candidates" ? c.mixedConf : biz.reviewerWhy === "blocked_terms" ? c.blockedTerms : c.lowConf}</Txt> : null}
               {biz.status === "needs_review" && biz.policy.reason && !biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.policy.reason}</Txt> : null}
               {biz.candidates && biz.candidates.length > 1 ? (
                 <Pressable onPress={() => setShowCands((v) => !v)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
