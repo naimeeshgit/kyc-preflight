@@ -389,3 +389,19 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
 - **Business proof:** a facts × sources matrix of ticks and crosses, with only the flags in words, and "See what each source says" for details.
 - **Try chips:** one slim row of short labels; the outcome tag appears on the chip you pick.
 - **One help surface:** every "write / draft / letter / prepare answers" button now opens the assistant, which interviews before drafting. It asks at most two short questions, each with tap answers, plus an always-present "Just draft it", then writes. Tested: refund policy → "how many days after delivery?" → tap "7 days" → a full draft card using her shop name, with [brackets] only for what she hasn't said.
+
+### 6.15 Honest progress and an assistant that prepares, not promises (13 Oct, 21:30–22:15 IST)
+
+- **Trigger (my review of a live chat):** the assistant offered "Just draft it" after it had already drafted; it carried the jewellery shop name into an astrology case; and "Next" buttons looked like a pass even with a document missing.
+- **No false "done":**
+  - Next buttons now say "Next: KYC route (1 open)", with "1 item still open. Fix before paying." above them, styled as secondary rather than as a green light.
+  - Payment stays blocked while anything is red.
+- **Drafts are checked before use:** every draft card counts its unfilled [brackets] ("3 blanks to fill before you use this") and carries "Using it doesn't guarantee approval; the reviewer decides."
+- **Assistant framing:**
+  - The header reads "An assistant, not a decision. It can't guarantee approval."
+  - The prompt forbids implying approval.
+  - It now receives explicit NOT CHECKED YET markers for KYC route, names and business proof, and may only state statuses the case gives. Its first live checklist had called names "matched" before any document was read; the re-test shows "not checked yet (step 3)".
+- **Covers all bases:**
+  - New first starter: "Prepare me for review". It produces a "Review-ready checklist" for her exact case: what the reviewer checks, each status, the fix, and likely reviewer questions with honest answers.
+  - Every answer ends with "Still open:" when something is, and one suggestion points to the next open item.
+- **Small fixes:** "Just draft it" is removed once a draft exists. Each demo path sets its own fictional shop name.
