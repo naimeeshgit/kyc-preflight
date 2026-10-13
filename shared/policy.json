@@ -1,0 +1,18 @@
+[
+  { "id": "jewellery_fashion", "label": "Fashion & handmade jewellery", "status": "supported" },
+  { "id": "jewellery_precious", "label": "Gold, silver & precious jewellery", "status": "supported" },
+  { "id": "apparel", "label": "Clothing & accessories", "status": "supported" },
+  { "id": "handicrafts_home", "label": "Handicrafts & home decor", "status": "supported" },
+  { "id": "home_food", "label": "Home-made food & bakery", "status": "supported", "extra": "FSSAI registration or licence" },
+  { "id": "hardware_tools", "label": "Hardware & tools", "status": "supported", "resellerDoc": true },
+  { "id": "electronics", "label": "Electronics & gadgets", "status": "supported", "resellerDoc": true },
+  { "id": "tuition_coaching", "label": "Tuition, coaching & classes", "status": "supported" },
+  { "id": "freelance_services", "label": "Freelance & professional services", "status": "supported" },
+  { "id": "astrology_spiritual", "label": "Astrology & spiritual services", "status": "needs_review" },
+  { "id": "pharma", "label": "Medicines & pharmacy", "status": "needs_review", "extra": "Drug licence" },
+  { "id": "real_money_gaming", "label": "Real-money gaming & betting", "status": "not_supported" },
+  { "id": "tobacco_ecig", "label": "Tobacco, e-cigarettes & vapes", "status": "not_supported" },
+  { "id": "crypto", "label": "Crypto & NFTs", "status": "not_supported" },
+  { "id": "alcohol", "label": "Alcohol", "status": "not_supported" },
+  { "id": "other", "label": "Something else", "status": "needs_review" }
+]

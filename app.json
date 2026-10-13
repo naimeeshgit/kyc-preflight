@@ -1,25 +1,44 @@
 {
   "expo": {
-    "name": "preflight-app",
-    "slug": "preflight-app",
+    "name": "KYC Pre-flight",
+    "slug": "kyc-preflight",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "description": "Concept prototype: an in-app check that tells a new seller whether their KYC will pass before they pay the fee.",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.naimeesh.kycpreflight",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Take a photo of your PAN, Aadhaar or bank proof so the app can check the names match.",
+        "NSPhotoLibraryUsageDescription": "Pick a photo of your PAN, Aadhaar or bank proof so the app can check the names match."
+      }
     },
     "android": {
+      "package": "dev.naimeesh.kycpreflight",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#10224A",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Pick a photo of your PAN, Aadhaar or bank proof so the app can check the names match.",
+          "cameraPermission": "Take a photo of your PAN, Aadhaar or bank proof so the app can check the names match."
+        }
+      ]
+    ],
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "KYC Pre-flight",
+      "shortName": "Pre-flight",
+      "themeColor": "#10224A",
+      "backgroundColor": "#F2F5FA"
     }
   }
 }
