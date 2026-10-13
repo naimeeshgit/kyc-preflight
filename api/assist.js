@@ -25,6 +25,19 @@ const TOOL = {
         required: ["title", "body", "notes"],
       },
       suggestions: { type: "array", items: { type: "string" }, description: "2-3 short next questions she might tap, in her language, specific to her case." },
+      checklist: {
+        type: ["array", "null"],
+        description: "Only when she asks to get fully ready / prepare everything / what's left: every base a reviewer will check for HER case, in order. Otherwise null.",
+        items: {
+          type: "object",
+          properties: {
+            item: { type: "string", description: "Short name of the base, e.g. 'Refund policy for sessions'." },
+            done: { type: "boolean", description: "True only if her case shows it is already covered." },
+            action: { type: ["string", "null"], description: "If not done: the exact request she can tap to work on it with you, e.g. 'Draft my refund policy for sessions'." },
+          },
+          required: ["item", "done", "action"],
+        },
+      },
     },
     required: ["message", "draft", "suggestions"],
   },
@@ -66,6 +79,12 @@ Rules:
 - Verdicts come from the app's rules. Never say she will be approved, never change or second-guess a status, never promise timelines from the gateway. You can explain what a requirement is and how to meet it.
 - Never help reword, hide or misdescribe a blocked or restricted business. If her category is not supported, say so plainly and help only with honest alternatives (e.g. selling only the supported part of her range).
 - Never explain risk or fraud signals; explain requirements only.
+- You are an assistant, not the decision-maker. Never say or imply she will be approved. When she asks "will this pass?" or similar, say plainly that nothing you write guarantees approval and the reviewer decides; then help her make the application as complete as possible.
+- Cover all bases. After answering or drafting, if her case still has open items (a missing document, a missing website page, a red or amber row on the pass, a business-proof flag, a video KYC call to prepare for), end the message with "Still open:" and up to 4 short lines naming them, and make one suggestion the next open item. If nothing is open, say what the reviewer will look at so she is ready.
+- "Prepare me for review" means: a draft titled "Review-ready checklist" that lists, for her exact case, what the reviewer will check (category, documents, names, business proof, website if any, KYC route), the status of each from the case, what to fix, and 2-4 questions the reviewer may ask with how to answer honestly.
+- You are an assistant. You help her prepare; you cannot guarantee approval. Never say or imply she will be approved, "is all set" or "will pass"; say "ready to submit" at most, and when she is ready, remind her in one short clause that the final decision is the reviewer's.
+- Cover all bases. When she asks to get fully ready (or what's left), return a "checklist" of everything a reviewer will look at for HER category and set-up: category fit and any category-specific asks (e.g. for services: what the session is, delivery mode, pricing, refund/cancellation terms; for food: FSSAI; for resellers: purchase invoice), documents from her plan, KYC route, bank name match, business proof (page, catalog, invoice), website pages if she has a site, visible fixed prices, contact details. Mark done only what her case already shows. Each open item gets an "action" she can tap. Keep the message to one line.
+- After you give a draft, point to the next open base in "suggestions" (as a tappable request), so she keeps moving until everything is covered.
 - Drafting works like a short interview. When she asks for a draft, first check her case: if one or two facts that would change the text are missing (a refund window, delivery time, which bank and branch, session length, price range), ask ONE short question, with 2-4 likely answers in "suggestions" and the last one always "${lang === "hi" ? "Bas draft kar dijiye" : "Just draft it"}". Ask at most two questions across the conversation, one per turn, then draft. If the case already has what you need, or she says to just draft it, draft now with [brackets] for the rest. Don't ask about things already in her case.
 - Bank name letter: addressed to her branch, quotes her PAN name and the account name exactly as in the case, asks to update the account holder name to match the PAN, lists PAN copy as enclosure.
 - Drafts (policy pages, letters, product or business descriptions, reviewer answers, a declaration of business): put them in "draft". Labelled as a draft, plain text, [brackets] for anything unknown (address, GSTIN, account number, dates). Never invent registration or licence numbers, legal citations or facts she hasn't given.
@@ -104,10 +123,13 @@ module.exports = async (req, res) => {
     const { json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) }], { maxTokens: 2000, tool: TOOL });
     const draft = json.draft && json.draft.body ? { title: clip(json.draft.title, 120) || "Draft", body: String(json.draft.body), notes: (json.draft.notes || []).slice(0, 3) } : null;
     let suggestions = (json.suggestions || []).slice(0, 3);
+    if (draft) suggestions = suggestions.filter((x) => !/just draft|bas draft/i.test(x));
+    if (draft) suggestions = suggestions.filter((x) => !/just draft|bas draft/i.test(x));
+    const checklist = Array.isArray(json.checklist) && json.checklist.length ? json.checklist.slice(0, 14).map((x) => ({ item: clip(x.item, 120), done: Boolean(x.done), action: x.done ? null : clip(x.action, 200) || null })) : null;
     // A question before a draft always offers the way out.
     const just = lang === "hi" ? "Bas draft kar dijiye" : "Just draft it";
-    if (!draft && /\?\s*$/.test(String(json.message || "")) && /draft|write|likh|letter|policy|page|answers|jawab/i.test(last.content + " " + (msgs[msgs.length - 3]?.content || "")) && !suggestions.some((x) => /just draft|bas draft/i.test(x))) suggestions = [...suggestions, just];
-    return res.status(200).json({ message: String(json.message || ""), draft, suggestions, model, ms: Date.now() - started });
+    if (!draft && !checklist && /\?\s*$/.test(String(json.message || "")) && /draft|write|likh|letter|policy|page|answers|jawab/i.test(last.content + " " + (msgs[msgs.length - 3]?.content || "")) && !suggestions.some((x) => /just draft|bas draft/i.test(x))) suggestions = [...suggestions, just];
+    return res.status(200).json({ message: String(json.message || ""), draft, checklist, suggestions, model, ms: Date.now() - started });
   } catch (e) {
     return res.status(e.status || 500).json({ error: e.message || "Server error" });
   }

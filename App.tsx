@@ -389,6 +389,7 @@ function Root() {
   // First questions, picked from what is still open in her case.
   const assistStarters = useMemo(() => {
     const out: string[] = [];
+    if (biz && biz.status !== "not_supported") out.push(c.aq.prepare);
     if (biz?.status === "not_supported") out.push(c.aq.whyBlocked);
     if (biz?.status === "needs_review") out.push(c.aq.reviewer);
     for (const it of docPlan?.items || []) if (it.status === "missing") out.push(c.askHowQ(it.label));
@@ -403,7 +404,7 @@ function Root() {
 
   function restart() {
     setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null); setSiteMode(null); setEntity(null); setHave([]); setHaveDone(false); setEvPhotos({}); setEvMismatch(false); setEvidence(null);
-    setPreset("priya"); setBizText(PRESETS.priya[lang]); go(0);
+    setPreset("priya"); setBizText(PRESETS.priya[lang]); setBrand(PRESETS.priya.shop || "Gulmohar Jewels"); setBrandDraft(PRESETS.priya.shop || "Gulmohar Jewels"); go(0);
   }
 
   /* ---------------- Screens ---------------- */
@@ -474,7 +475,7 @@ function Root() {
             </View>
             <DemoPaths th={th} title={c.examples} paths={Object.entries(PRESETS).map(([k, p]) => ({
               key: k, label: p.label, tag: p.tag, tone: p.tone, on: preset === k,
-              onPress: () => { setPreset(k); setBizText(p[lang]); setBiz(null); setBizErr(null); setAsk(null); },
+              onPress: () => { setPreset(k); setBizText(p[lang]); setBiz(null); setBizErr(null); setAsk(null); if (p.shop) { setBrand(p.shop); setBrandDraft(p.shop); } },
             }))} />
           </>
         ) : (
@@ -669,7 +670,16 @@ function Root() {
     footer = biz
       ? st === "not_supported"
         ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setAsk(null); setPreset(null); setSiteMode(null); setSite(null); }} />
-        : <Button th={th} label={c.s1Next} onPress={() => go(2)} disabled={!siteDone || !entity || !haveDone} />
+        : (() => {
+            const open = (docPlan?.items.filter((i) => i.status === "missing").length || 0) + (siteMode === "site" && site ? (site.ok ? site.missing.length : 1) : 0);
+            const answered = siteDone && entity && haveDone;
+            return (
+              <>
+                {answered && open ? <OpenNote th={th} text={c.openNote(open)} /> : null}
+                <Button th={th} label={answered && open ? c.continueOpen(c.s1Next, open) : c.s1Next} kind={answered && open ? "secondary" : "primary"} onPress={() => go(2)} disabled={!answered} />
+              </>
+            );
+          })()
       : ask
         ? <Button th={th} label={c.askCta} onPress={() => runClassify(ask)} busy={bizBusy} disabled={!ask.answer.trim()} />
         : <Button th={th} label={c.s1Cta} onPress={() => runClassify()} busy={bizBusy} disabled={!bizText.trim()} />;
@@ -807,7 +817,15 @@ function Root() {
     );
     footer = !names || (!evidence && !evBusy)
       ? <Button th={th} label={c.s3CtaAll} icon="maximize" onPress={() => (names && !evidence ? runEvidence(legal) : runAll())} busy={namesBusy || evBusy} />
-      : <Button th={th} label={c.s3Next} kind={bankFail ? "secondary" : "primary"} onPress={() => go(4)} />;
+      : (() => {
+          const open = (bankFail ? 1 : 0) + (evidence && evidence.grid.verdict === "bad" ? 1 : 0);
+          return (
+            <>
+              {open ? <OpenNote th={th} text={c.openNote(open)} /> : null}
+              <Button th={th} label={open ? c.continueOpen(c.s3Next, open) : c.s3Next} kind={open ? "secondary" : "primary"} onPress={() => go(4)} />
+            </>
+          );
+        })();
   }
 
   if (step === 4) {
@@ -1159,6 +1177,15 @@ function MicButton({ th, lang, onText }: { th: Theme; lang: Lang; onText: (t: st
       style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: on ? th.neg : th.brandTint, borderWidth: on ? 0 : 1, borderColor: th.line }}>
       <Icon name={on ? "square" : "mic"} size={18} color={on ? "#fff" : th.brand} />
     </Pressable>
+  );
+}
+
+function OpenNote({ th, text }: { th: Theme; text: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "center" }}>
+      <Icon name="alert-circle" size={13} color={th.warn} />
+      <Txt th={th} v="tiny" color={th.warn}>{text}</Txt>
+    </View>
   );
 }
 

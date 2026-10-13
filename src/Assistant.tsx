@@ -6,7 +6,7 @@ import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
 type Turn = AssistMsg & { draft?: AssistReply["draft"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { title: string; sub: string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+export type AssistCopy = { title: string; sub: string; disclaimer: string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
@@ -90,6 +90,11 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                     </View>
                     <Text selectable style={{ padding: 12, fontFamily: font.body, fontSize: 13.5, lineHeight: 20, color: th.ink }}>{m.draft.body}</Text>
                     {m.draft.notes.length ? <View style={{ paddingHorizontal: 12, paddingBottom: 10, gap: 4 }}>{m.draft.notes.map((n, k) => <IconRow key={k} th={th} icon="alert-circle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}</View> : null}
+                    {(() => { const n = (m.draft.body.match(/\[[^\]]+\]/g) || []).length; return n ? (
+                      <View style={{ marginHorizontal: 12, marginBottom: 10, flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: r.md, backgroundColor: th.warnTint }}>
+                        <Icon name="edit-3" size={13} color={th.warn} /><Txt th={th} v="smallMed" color={th.warn}>{t.blanks(n)}</Txt>
+                      </View>) : null; })()}
+                    <Txt th={th} v="tiny" color={th.faint} style={{ paddingHorizontal: 12, paddingBottom: 10 }}>{t.disclaimer}</Txt>
                     <Pressable onPress={() => copy(i, m.draft!)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 10, borderTopWidth: 1, borderTopColor: th.line }}>
                       <Icon name={copiedAt === i ? "check" : Platform.OS === "web" ? "copy" : "share-2"} size={15} color={th.brand} />
                       <Txt th={th} v="smallMed" color={th.brand}>{copiedAt === i ? t.copied : Platform.OS === "web" ? t.copy : t.share}</Txt>
