@@ -31,7 +31,7 @@ const TOOL = {
 };
 
 // Deterministic guard: a blocked category plus a request to reword, hide or get around it gets a fixed answer.
-const WORKAROUND = /(reword|re-word|rephrase|describe (it|this|my business) (differently|as)|call it something|hide|bypass|get around|work ?around|so (that )?it (passes|gets approved)|trick|without (them|razorpay) knowing|kaise chhupa|chupa|badal ke likh)/i;
+const WORKAROUND = /(reword|re-word|rephrase|describe (it|this|my business) (differently|as)|call it something|hide|bypass|get around|work ?around|so (that )?it (passes|gets approved)|trick|without (them|razorpay) knowing|kaise chhupa|chupa|badal ke likh|(list|show|register|mark|put|file|categori[sz]e) (it|them|this|my business|my shop) (as|under)|say (it'?s|it is|i sell|that i sell)|instead of (saying|writing))/i;
 
 const clip = (v, n = 600) => String(v ?? "").slice(0, n);
 
