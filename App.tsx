@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { Animated, Easing, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Share, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -12,7 +12,7 @@ import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from "@expo-google-fon
 import { font, r, Theme, useTheme } from "./src/theme";
 import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
-import { checkSite, SiteResult } from "./src/api";
+import { checkSite, draft as draftApi, Draft, SiteResult } from "./src/api";
 import { browserSpeechAvailable, startBrowserSpeech } from "./src/voice";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
@@ -63,6 +63,10 @@ function Root() {
   const [howOpen, setHowOpen] = useState(false);
   const [feeOpen, setFeeOpen] = useState(false);
   const [branchOpen, setBranchOpen] = useState(false);
+  const [draftOpen, setDraftOpen] = useState(false);
+  const [draftBusy, setDraftBusy] = useState(false);
+  const [draftDoc, setDraftDoc] = useState<Draft | null>(null);
+  const [copied, setCopied] = useState(false);
   const [brandOpen, setBrandOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -161,6 +165,44 @@ function Root() {
     addLog({ kind: source === "live" ? "ai" : "rec", title: "Description → category", ms, note: [model, note].filter(Boolean).join(" · "), json: ai });
     addLog({ kind: "rule", title: "Decision policy", json: { policy_id: res.policy.id, table_status: res.policy.status, confidence: ai.confidence, decision: decision || { state: "local_rule", threshold: 0.6 }, final_status: res.status, documents: res.docs } });
     scrollDown();
+  }
+
+  /** The model's second job: it writes. Every draft is labelled, bracketed where unknown, and reviewed by the seller. */
+  async function makeDraft(payload: Parameters<typeof draftApi>[0]) {
+    setDraftOpen(true); setDraftBusy(true); setDraftDoc(null); setCopied(false);
+    try {
+      const d = await draftApi(payload);
+      setDraftDoc(d);
+      addLog({ kind: "ai", title: `Draft: ${d.title}`, ms: d.ms, note: `${d.model} · labelled draft, seller reviews before use`, json: { kind: payload.kind, page: payload.page, notes: d.notes } });
+    } catch (e: any) {
+      setDraftDoc({ title: c.draftTitle, body: c.errNoAI, notes: [], ms: 0, draft: true });
+      addLog({ kind: "ai", title: "Draft failed", json: { error: e?.message } });
+    }
+    setDraftBusy(false);
+  }
+  /** Deterministic: the branch letter needs no model, only the names the engine already has. */
+  function branchLetter() {
+    const byDoc = Object.fromEntries((names?.ai.documents || []).map((d) => [d.doc, d.name]));
+    const body = [
+      "To,", "The Branch Manager,", "[Bank name], [Branch]", "",
+      `Subject: ${c.letterTitle}`, "",
+      "Dear Sir/Madam,", "",
+      `I hold savings/current account number [account number] at your branch. The account holder name is currently recorded as "${byDoc.Bank || "[name on bank record]"}".`,
+      `My name as per PAN (${pan.slice(0, 3)}•••${pan.slice(-2)}) is "${byDoc.PAN || "[name on PAN]"}". The payment gateway's bank verification compares the account holder name with the PAN name, and the difference is holding up my business account activation.`,
+      "", `I request you to update the account holder name to "${byDoc.PAN || "[name on PAN]"}" exactly as on my PAN card. I am enclosing a self-attested copy of my PAN card and [Aadhaar / passbook first page].`,
+      "", "Thanking you,", "", `${byDoc.PAN || "[Your name]"}`, "Mobile: [mobile]", "Date: [date]",
+    ].join("\n");
+    setDraftDoc({ title: c.letterTitle, body, notes: ["Fill the bank name, branch, account number, mobile and date.", "Carry the original PAN card; most branches update the name in 2–3 working days.", "Then come back and run the name check again."], ms: 0, draft: true });
+    setDraftOpen(true); setDraftBusy(false); setCopied(false);
+    addLog({ kind: "rule", title: "Draft: branch letter (template, names from the engine)", json: { pan_name: byDoc.PAN, bank_name: byDoc.Bank } });
+  }
+  async function copyDraft() {
+    if (!draftDoc) return;
+    const text = `${draftDoc.title}\n\n${draftDoc.body}`;
+    try {
+      if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); }
+      else await Share.share({ message: text, title: draftDoc.title });
+    } catch { /* user cancelled */ }
   }
 
   async function runSite() {
@@ -381,7 +423,12 @@ function Root() {
                 <Text style={{ fontFamily: font.display, fontSize: 22, color: th.neg, marginTop: 4 }}>{inr(FEE_TOTAL)} {c.saved}</Text>
               </Notice>
             ) : null}
-            {st === "needs_review" ? <Notice th={th} tone="warn" title={c.needs_review}><Txt th={th}>{c.reviewNote}</Txt></Notice> : null}
+            {st === "needs_review" ? (
+              <Notice th={th} tone="warn" title={c.needs_review}>
+                <Txt th={th}>{c.reviewNote}</Txt>
+                <Button th={th} kind="secondary" compact icon="edit-3" label={c.writeAnswers} onPress={() => makeDraft({ kind: "clarification", lang, business: { description: bizText, category: biz.policy.category, label: biz.policy.label, status: biz.policy.status, reason: biz.policy.reason } })} />
+              </Notice>
+            ) : null}
           </Reveal>
         ) : null}
 
@@ -419,9 +466,16 @@ function Root() {
                     <>
                       <Status th={th} tone={site.missing.length ? "bad" : "ok"} label={site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk} />
                       {Object.entries(site.pages).map(([k, p]) => (
-                        <IconRow key={k} th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
-                          <Txt th={th}>{p.label}{p.found && p.linkText ? <Txt th={th} v="small" color={th.muted}>  · {p.linkText}</Txt> : null}</Txt>
-                        </IconRow>
+                        <View key={k} style={{ gap: 6 }}>
+                          <IconRow th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
+                            <Txt th={th}>{p.label}{p.found && p.linkText ? <Txt th={th} v="small" color={th.muted}>  · {p.linkText}</Txt> : null}</Txt>
+                          </IconRow>
+                          {!p.found || p.thin ? (
+                            <View style={{ paddingLeft: 30 }}>
+                              <Button th={th} kind="secondary" compact icon="edit-3" label={c.writePage} onPress={() => makeDraft({ kind: "policy", page: k, lang, site: site.finalUrl, business: { description: bizText, category: biz.policy.category, label: biz.policy.label } })} />
+                            </View>
+                          ) : null}
+                        </View>
                       ))}
                       {site.notes.map((n, i) => <IconRow key={`n${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}
                     </>
@@ -555,7 +609,8 @@ function Root() {
                 <Txt th={th} v="h3">{c.fixTitle}</Txt>
                 {verdicts.Bank?.fix ? <Txt th={th} color={th.muted}>{verdicts.Bank.fix}</Txt> : null}
                 {bankVariant === "short" && !photos.bank ? <Button th={th} label={c.fixSwap} icon="repeat" onPress={() => { setBankVariant("full"); runNames("full"); }} /> : null}
-                <Button th={th} kind="secondary" label={c.fixBranch} icon="map-pin" onPress={() => setBranchOpen(true)} />
+                <Button th={th} kind="secondary" label={c.fixLetter} icon="file-text" onPress={branchLetter} />
+                <Button th={th} kind="quiet" label={c.fixBranch} icon="map-pin" onPress={() => setBranchOpen(true)} />
               </Panel>
             ) : null}
           </Reveal>
@@ -683,6 +738,25 @@ function Root() {
           style={{ borderWidth: 1.5, borderColor: th.line, borderRadius: r.md, padding: 14, fontFamily: font.bodyMed, fontSize: 16, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }} />
         <Txt th={th} v="small" color={th.muted}>{c.brandBody}</Txt>
         <Button th={th} label={c.save} disabled={!brandDraft.trim()} onPress={() => { setBrand(brandDraft.trim()); setBrandOpen(false); }} />
+      </Sheet>
+      <Sheet th={th} wide={wide} visible={draftOpen} onClose={() => setDraftOpen(false)} title={draftDoc?.title || c.draftTitle}>
+        {draftBusy ? <Thinking th={th} label={c.drafting} /> : null}
+        {draftDoc ? (
+          <>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Tag th={th} kind={draftDoc.model ? "ai" : "rule"} />
+              <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>{c.draftNote}</Txt>
+            </View>
+            <View style={{ padding: 14, borderRadius: r.md, backgroundColor: th.sunken, borderWidth: 1, borderColor: th.line }}>
+              <Text selectable style={{ fontFamily: font.body, fontSize: 14, lineHeight: 21, color: th.ink }}>{draftDoc.body}</Text>
+            </View>
+            {draftDoc.notes.length ? <View style={{ gap: 6 }}>{draftDoc.notes.map((n, i) => <IconRow key={i} th={th} icon="alert-circle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}</View> : null}
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <View style={{ flex: 1 }}><Button th={th} label={copied ? c.copied : Platform.OS === "web" ? c.copy : c.share} icon={copied ? "check" : Platform.OS === "web" ? "copy" : "share-2"} onPress={copyDraft} /></View>
+              <View style={{ flex: 1 }}><Button th={th} kind="secondary" label={c.gotIt} onPress={() => setDraftOpen(false)} /></View>
+            </View>
+          </>
+        ) : null}
       </Sheet>
       <Sheet th={th} wide={wide} visible={howOpen} onClose={() => setHowOpen(false)} title={c.howItWorks}>
         <HowItWorks th={th} step={step} log={log} srv={srv} mode={mode} setMode={setMode} live={live} />

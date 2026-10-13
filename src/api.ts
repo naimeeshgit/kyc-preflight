@@ -58,3 +58,7 @@ export const readNames = (docs: { pan: DocInput; aadhaar: DocInput; bank: DocInp
 export type SitePage = { label: string; found: boolean; url?: string; linkText?: string; status?: number; words?: number; thin?: boolean };
 export type SiteResult = { ok: boolean; kind: "site" | "social" | "unreachable"; finalUrl?: string; status?: number; pages: Record<string, SitePage>; missing: string[]; notes: string[]; linksSeen?: number; ms: number };
 export const checkSite = (url: string, sellsGoods: boolean) => post<SiteResult>("/api/site", { url, sellsGoods }, 30000);
+
+export type Draft = { title: string; body: string; notes: string[]; model?: string; ms: number; draft: true };
+export const draft = (payload: { kind: "policy" | "clarification"; lang: Lang; business: { description: string; category?: string; label?: string; status?: string; reason?: string }; page?: string; site?: string }) =>
+  post<Draft>("/api/draft", payload, 60000);
