@@ -5,7 +5,12 @@ const TAXONOMY = require("../../shared/taxonomy.json");
 
 // Hinglish-aware tokeniser: lower-case, strip punctuation, split, drop stop words, light stemming.
 const STOP = new Set("i am a an the and or of to in on for my me we our is are se ka ki ke ko ki hai hain hu hun hoon ho mai main mein me bhi aur ya par pe home ghar instagram insta whatsapp facebook website page karta karti karte krta krti krte kar kr chalata chalati chalate chalta chalti sell bechta bechti bechte bechna sale selling business shop dukan dukaan online through via from with by at this that it".split(" "));
-const STEM = (w) => w.replace(/(ies)$/, "y").replace(/(es|s)$/, "").replace(/(ing)$/, "");
+// Plurals and -ing first, then a trailing "e", so vape / vapes / vaping and cake / cakes all meet at one stem.
+const STEM = (w) => {
+  if (w.length <= 3) return w;
+  w = w.replace(/ies$/, "y").replace(/(ss|us|is)$/, (m) => m + "\u0000").replace(/(sh|ch|x|z)es$/, "$1").replace(/s$/, "").replace(/\u0000$/, "").replace(/ing$/, "");
+  return w.length > 3 ? w.replace(/e$/, "") : w;
+};
 function tokens(text) {
   return String(text || "").toLowerCase().replace(/[^a-z0-9ऀ-ॿఀ-౿\s]/g, " ").split(/\s+/)
     .filter((w) => w.length > 1 && !STOP.has(w)).map(STEM);
