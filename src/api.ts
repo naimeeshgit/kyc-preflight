@@ -73,5 +73,5 @@ export const readEvidence = (payload: { lang: Lang; declared: { legalName: strin
 /* In-app assistant: answers from the seller's own case and drafts what she needs. */
 export type AssistCase = Record<string, unknown>;
 export type AssistMsg = { role: "user" | "assistant"; content: string };
-export type AssistReply = { message: string; draft: { title: string; body: string; notes: string[] } | null; suggestions: string[]; guard?: string; model: string; ms: number };
+export type AssistReply = { message: string; draft: { title: string; body: string; notes: string[] } | null; checklist?: { item: string; done: boolean; action: string | null }[] | null; suggestions: string[]; guard?: string; model: string; ms: number };
 export const assist = (payload: { lang: Lang; messages: AssistMsg[]; case: AssistCase }) => post<AssistReply>("/api/assist", payload, 60000);

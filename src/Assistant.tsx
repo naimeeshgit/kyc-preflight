@@ -5,8 +5,8 @@ import type { Lang } from "./data";
 import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
-type Turn = AssistMsg & { draft?: AssistReply["draft"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { title: string; sub: string; disclaimer: string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+type Turn = AssistMsg & { draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
+export type AssistCopy = { title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
@@ -31,7 +31,7 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
     try {
       const history = next.filter((m) => !m.error).map((m) => ({ role: m.role, content: m.draft ? `${m.content}\n[Draft given: ${m.draft.title}]` : m.content }));
       const res = await assist({ lang, messages: history, case: caseData });
-      setTurns((cur) => [...cur, { role: "assistant", content: res.message, draft: res.draft, suggestions: res.suggestions, guard: res.guard }]);
+      setTurns((cur) => [...cur, { role: "assistant", content: res.message, draft: res.draft, checklist: res.checklist, suggestions: res.suggestions, guard: res.guard }]);
       onLog?.(res.guard ? "Assistant: rule answered (blocked-category workaround)" : `Assistant reply${res.draft ? `, draft: ${res.draft.title}` : ""}`, { question: q, reply: res.message, draft: res.draft ? { title: res.draft.title, notes: res.draft.notes } : null, guard: res.guard || null }, res.ms, res.model);
     } catch (e: any) {
       setTurns((cur) => [...cur, { role: "assistant", content: t.error, error: true }]);
@@ -52,6 +52,9 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
 
   const last = turns[turns.length - 1];
   const chips = !turns.length ? starters : last && last.role === "assistant" && !busy ? last.suggestions || [] : [];
+  // When the assistant just asked a question, the chips are answers: make them easy, thumb-sized pills.
+  const answering = Boolean(last && last.role === "assistant" && !last.draft && !last.checklist?.length && /\?\s*$/.test(last.content));
+  const isEscape = (s: string) => /^(skip|just draft it|bas draft kar dijiye)$/i.test(s.trim());
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -81,6 +84,26 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                   {m.guard ? <Txt th={th} v="tiny" color={th.muted}>Rule answer · no model</Txt> : null}
                   <Text selectable style={{ fontFamily: font.body, fontSize: 14.5, lineHeight: 21, color: th.ink }}>{m.content}</Text>
                 </View>
+                {m.checklist?.length ? (
+                  <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface, overflow: "hidden" }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 9, backgroundColor: th.brandTint }}>
+                      <Icon name="check-square" size={15} color={th.brand} />
+                      <Txt th={th} v="smallMed" color={th.brand} style={{ flex: 1 }}>{t.checklistTitle(m.checklist.filter((x) => x.done).length, m.checklist.length)}</Txt>
+                    </View>
+                    {m.checklist.map((x, k) => (
+                      <View key={k} style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 12, paddingVertical: 9, borderTopWidth: k ? 1 : 0, borderTopColor: th.line }}>
+                        <Icon name={x.done ? "check-circle" : "circle"} size={16} color={x.done ? th.pos : th.faint} />
+                        <Txt th={th} v="small" color={x.done ? th.muted : th.ink} style={{ flex: 1 }}>{x.item}</Txt>
+                        {!x.done && x.action ? (
+                          <Pressable onPress={() => send(x.action!)} disabled={busy} accessibilityRole="button" style={({ hovered }: any) => ({ paddingVertical: 5, paddingHorizontal: 10, borderRadius: r.pill, backgroundColor: hovered ? th.brandPress : th.brand })}>
+                            <Text style={{ fontFamily: font.bodySemi, fontSize: 12, color: "#fff" }}>{t.fix}</Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ))}
+                    <Txt th={th} v="tiny" color={th.faint} style={{ paddingHorizontal: 12, paddingVertical: 8 }}>{t.disclaimerChecklist}</Txt>
+                  </View>
+                ) : null}
                 {m.draft ? (
                   <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface, overflow: "hidden" }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 9, backgroundColor: th.brandTint }}>
@@ -112,7 +135,13 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
               <View style={{ gap: 8, marginTop: 4 }}>
                 {!turns.length ? <Txt th={th} v="smallMed" color={th.muted}>{t.startersTitle}</Txt> : null}
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                  {chips.map((s) => (
+                  {chips.map((s) => answering ? (
+                    <Pressable key={s} onPress={() => send(s)} accessibilityRole="button" style={({ hovered }: any) => isEscape(s)
+                      ? { borderRadius: r.pill, paddingVertical: 9, paddingHorizontal: 14 }
+                      : { borderWidth: 1.5, borderColor: th.brand, backgroundColor: hovered ? th.brand : th.brandTint, borderRadius: r.pill, paddingVertical: 9, paddingHorizontal: 16, maxWidth: "100%" }}>
+                      {({ hovered }: any) => <Text style={{ fontFamily: font.bodySemi, fontSize: 14, color: isEscape(s) ? th.muted : hovered ? "#fff" : th.brand }}>{s}</Text>}
+                    </Pressable>
+                  ) : (
                     <Pressable key={s} onPress={() => send(s)} accessibilityRole="button" style={({ hovered }: any) => ({ borderWidth: 1, borderColor: th.line, borderStyle: "dashed", backgroundColor: hovered ? th.sunken : th.surface, borderRadius: r.md, paddingVertical: 7, paddingHorizontal: 11, maxWidth: "100%" })}>
                       <Text style={{ fontFamily: font.bodyMed, fontSize: 13.5, color: th.ink }}>{s}</Text>
                     </Pressable>

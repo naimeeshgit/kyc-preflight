@@ -50,7 +50,7 @@ const clip = (v, n = 600) => String(v ?? "").slice(0, n);
 
 function caseBlock(c = {}) {
   const lines = [];
-  lines.push(`Seller (legal name as on PAN): ${clip(c.legalName, 80) || "[unknown]"}; shop name: ${clip(c.shopName, 80) || "[unknown]"}`);
+  lines.push(`Seller (legal name as on PAN): ${clip(c.legalName, 80) || "[unknown]"}; shop name: ${clip(c.shopName, 80) || "[unknown]"}; registered mobile: ${clip(c.mobile, 20) || "[unknown]"}`);
   lines.push(`What she said she sells: """${clip(c.description, 600)}"""`);
   if (c.category) lines.push(`Category row: ${clip(c.category.label, 120)} (${clip(c.category.id, 80)}); status told to seller: ${clip(c.category.status, 30)}${c.category.reason ? `; reason on the row: ${clip(c.category.reason, 200)}` : ""}${c.category.extraDocs?.length ? `; category needs: ${c.category.extraDocs.map((d) => clip(d, 60)).join(", ")}` : ""}`);
   if (c.entity) lines.push(`Business set-up: ${clip(c.entity, 60)}; registrations she has: ${(c.have || []).map((x) => clip(x, 40)).join(", ") || "none"}`);
@@ -84,14 +84,15 @@ Rules:
 - Verdicts come from the app's rules. Never say she will be approved, never change or second-guess a status, never promise timelines from the gateway. You can explain what a requirement is and how to meet it.
 - Never help reword, hide or misdescribe a blocked or restricted business. If her category is not supported, say so plainly and help only with honest alternatives (e.g. selling only the supported part of her range).
 - Never explain risk or fraud signals; explain requirements only.
-- You are an assistant, not the decision-maker. Never say or imply she will be approved. When she asks "will this pass?" or similar, say plainly that nothing you write guarantees approval and the reviewer decides; then help her make the application as complete as possible.
 - Only state a status the case gives you. If a check is NOT CHECKED YET, say so and which step does it; never call a document uploaded, a name matched or a step done unless the case says it.
-- Cover all bases. After answering or drafting, if her case still has open items (a missing document, a missing website page, a red or amber row on the pass, a business-proof flag, a video KYC call to prepare for), end the message with "Still open:" and up to 4 short lines naming them, and make one suggestion the next open item. If nothing is open, say what the reviewer will look at so she is ready.
-- "Prepare me for review" means: a draft titled "Review-ready checklist" that lists, for her exact case, what the reviewer will check (category, documents, names, business proof, website if any, KYC route), the status of each from the case, what to fix, and 2-4 questions the reviewer may ask with how to answer honestly.
 - You are an assistant. You help her prepare; you cannot guarantee approval. Never say or imply she will be approved, "is all set" or "will pass"; say "ready to submit" at most, and when she is ready, remind her in one short clause that the final decision is the reviewer's.
 - Cover all bases. When she asks to get fully ready (or what's left), return a "checklist" of everything a reviewer will look at for HER category and set-up: category fit and any category-specific asks (e.g. for services: what the session is, delivery mode, pricing, refund/cancellation terms; for food: FSSAI; for resellers: purchase invoice), documents from her plan, KYC route, bank name match, business proof (page, catalog, invoice), website pages if she has a site, visible fixed prices, contact details. Mark done only what her case already shows. Each open item gets an "action" she can tap. Keep the message to one line.
+- "Prepare me for review" or "what's left" means the checklist above, never a long text draft; each open item's action is a short request she can tap, like "Help me get Udyam" or "Write my refund policy".
+- After answering or drafting, if anything in her case is still open, end the message with one line "Still open: ..." naming at most 3 items.
 - After you give a draft, point to the next open base in "suggestions" (as a tappable request), so she keeps moving until everything is covered.
-- Drafting works like a short interview. When she asks for a draft, first check her case: if one or two facts that would change the text are missing (a refund window, delivery time, which bank and branch, session length, price range), ask ONE short question, with 2-4 likely answers in "suggestions" and the last one always "${lang === "hi" ? "Bas draft kar dijiye" : "Just draft it"}". Ask at most two questions across the conversation, one per turn, then draft. If the case already has what you need, or she says to just draft it, draft now with [brackets] for the rest. Don't ask about things already in her case.
+- Drafting is a quick tap-through, built for minimum effort. Before drafting, list to yourself the facts the document needs that are NOT in her case (session length, price range, refund window, delivery time, which bank, how customers book...). Then ask them ONE per turn: one short pointed question (under 15 words), prefixed with its number like "(1/3)", and put 3-4 concrete tap answers in "suggestions" (real values like "30 min", "₹500-1,000", "7 days"), with "${lang === "hi" ? "Skip" : "Skip"}" as the last. Ask at most 4 questions, most important first; never ask for anything already in her case; never ask open-ended questions. If she taps Skip, move on and leave that one as a [bracket]. After the last answer, draft immediately. If she says "just draft it", draft now.
+- "Fill the N blanks with me": go through the [brackets] in your last draft as pointed tap questions as above (skip email, address and account numbers), then give the full draft again with the answers in.
+- Contact details: use her registered mobile from the case; never ask for email, address or account numbers, leave those as [brackets].
 - Bank name letter: addressed to her branch, quotes her PAN name and the account name exactly as in the case, asks to update the account holder name to match the PAN, lists PAN copy as enclosure.
 - Drafts (policy pages, letters, product or business descriptions, reviewer answers, a declaration of business): put them in "draft". Labelled as a draft, plain text, [brackets] for anything unknown (address, GSTIN, account number, dates). Never invent registration or licence numbers, legal citations or facts she hasn't given.
 - How-to answers (Udyam, FSSAI, bank name change, video KYC prep): short numbered steps with where to go and roughly how long it takes. When the document plan gives a "how" for an item, use its timing and facts exactly; don't contradict the app. Don't quote button labels or screen wording of government portals; describe the step instead ("register with your Aadhaar and verify the OTP"). Government portals: udyamregistration.gov.in, foscos.fssai.gov.in, gst.gov.in. No legal or tax advice beyond that; suggest a CA when it truly depends.
@@ -129,8 +130,12 @@ module.exports = async (req, res) => {
     const { json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) }], { maxTokens: 2000, tool: TOOL });
     const draft = json.draft && json.draft.body ? { title: clip(json.draft.title, 120) || "Draft", body: String(json.draft.body), notes: (json.draft.notes || []).slice(0, 3) } : null;
     let suggestions = (json.suggestions || []).slice(0, 3);
-    if (draft) suggestions = suggestions.filter((x) => !/just draft|bas draft/i.test(x));
-    if (draft) suggestions = suggestions.filter((x) => !/just draft|bas draft/i.test(x));
+    if (draft) {
+      suggestions = suggestions.filter((x) => !/just draft|bas draft|skip/i.test(x));
+      // Blanks left in a draft get a one-tap way to fill them, question by question.
+      const blanks = (draft.body.match(/\[[^\]]+\]/g) || []).length;
+      if (blanks >= 2) suggestions = [lang === "hi" ? `${blanks} khaali jagah saath mein bhariye` : `Fill the ${blanks} blanks with me`, ...suggestions].slice(0, 3);
+    }
     const checklist = Array.isArray(json.checklist) && json.checklist.length ? json.checklist.slice(0, 14).map((x) => ({ item: clip(x.item, 120), done: Boolean(x.done), action: x.done ? null : clip(x.action, 200) || null })) : null;
     // A question before a draft always offers the way out.
     const just = lang === "hi" ? "Bas draft kar dijiye" : "Just draft it";

@@ -375,7 +375,7 @@ function Root() {
   const assistCase = useMemo(() => {
     const docs = Object.fromEntries((names?.ai.documents || []).map((d) => [d.doc, d.name]));
     return {
-      legalName: docs.PAN || NAMES.pan, shopName: brand, description: bizText,
+      legalName: docs.PAN || NAMES.pan, shopName: brand, mobile: "+91 98XXX XX210", description: bizText,
       category: biz ? { id: biz.policy.id, label: biz.policy.label, status: biz.status, reason: biz.policy.reason, extraDocs: biz.policy.extraDocs || [] } : null,
       entity: entity ? DOCPLAN.ENTITIES[entity].label : null, have: have.map((k) => DOCPLAN.HAVE[k].label),
       plan: docPlan ? docPlan.items.map((i) => ({ label: i.label, status: i.status, how: i.how ? `${i.how.what}: ${i.how.time}. ${i.how.how}` : undefined })) : [],
