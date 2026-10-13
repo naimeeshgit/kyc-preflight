@@ -339,3 +339,20 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
   - Swapping in a mismatched catalog ("Raju Hardware & More", with vape kits) flagged the name and three restricted items. The pass showed a red Business-proof stamp and blocked payment, and the case file listed 2 open items.
 - **Bugs fixed from that run:** the evidence intro said "unregistered sellers…" to a registered proprietor; the pass title said "One thing to fix" when there were two; the case file showed a raw verdict code.
 - **Boundary kept:** the grid states facts that disagree. It does not score trustworthiness or explain risk signals. A red cell means "a reviewer will ask about this", which the seller can fix (wrong catalog, missing invoice) before paying.
+
+### 6.12 Every branch one tap away, for reviewers (13 Oct, 20:20–20:50 IST)
+
+- **Trigger:** judges will open the prototype cold. If every input needs typing, they see one happy path and miss the engine.
+- **Built:** a dashed "Try a path" box at every input, each chip tagged with the outcome it leads to:
+  - **What you sell** (8 paths): supported, reseller (invoice needed), needs review, extra licence (FSSAI), asks a question, blocked (no fee), hidden blocked item, Hindi script.
+  - **The clarifying question:** answer chips that branch. "I do trading" → "sarees wholesale" goes to review; "shares and crypto" is blocked.
+  - **Website:** two fictional demo stores served from the prototype's own domain (complete; missing 3 pages), a social link, and one real store. The demo stores mean the live check never depends on a third-party site during judging.
+  - **KYC route:** not in registry (video call) or in registry (instant).
+  - **Bank account:** name missing a word, or name matches.
+  - **Business proof:** everything adds up, or a catalog from another business.
+- **Found by walking every path live, and fixed:**
+  1. "Vapes on Instagram" asked a pointless question. Two causes. The blocked-word tripwire matched "vape" but not "vapes". And the policy asked whenever the model was unsure, even when no answer could unblock the item. New rule 0: when the description contains blocked-domain words, the model picked a blocked row, and no strong alternative has a different status, the verdict is "blocked" with no question. Two independent signals have to agree, so a single ambiguous word can't block a seller. The eval was re-run after the change (below).
+  2. "Try a different description" after a blocked answer reopened the old question.
+  3. A cricket "gaming app" preset went straight to review instead of asking, so it was replaced with "I do trading", which reliably asks.
+- **Eval re-run after rule 0 (live, 146 cases):** 89.7% told the right status; **0 / 76 false green; 0 / 70 false red; 14 / 14 adversarial caught**; recall@8 94.5%; 21.9% asked or deferred. All 15 misses were "told needs review" (cautious deferrals). Rule 0 can only output "blocked", so none of them came from it. The 1.4-point drop from run 3 is run-to-run variance in the model, so the note and landing now quote 90–91% across runs rather than the best run.
+- **Video script** updated with a 10-second "every branch" beat.

@@ -82,7 +82,7 @@ export function Landing({ th, onHow }: { th: Theme; onHow: () => void }) {
       <Section title="Measured, not asserted" sub="Two labelled test sets ship inside the app. Press 'See how it works' and run the category set against the live model yourself.">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
           <Stat n="340" label={`sub-categories, ${TAXONOMY_STATS.not_supported} blocked, ${TAXONOMY_STATS.needs_review} human-reviewed`} />
-          <Stat n="91%" label="of 146 labelled descriptions told the right status (EN, Hinglish, Telugu, adversarial)" />
+          <Stat n="90–91%" label="of 146 labelled descriptions told the right status across runs (EN, Hinglish, Telugu, adversarial); every miss is a cautious deferral" />
           <Stat n="0 / 76" label="blocked or reviewed businesses wrongly told 'supported'" />
           <Stat n="14 / 14" label="adversarial re-wordings of blocked businesses caught" />
           <Stat n="303 / 304" label="name pairs judged correctly, 0 false passes" />
