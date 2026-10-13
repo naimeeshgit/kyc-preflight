@@ -20,6 +20,7 @@ import { browserSpeechAvailable, startBrowserSpeech } from "./src/voice";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
 import { Landing } from "./src/Landing";
+import { Assistant } from "./src/Assistant";
 import { ckycSearch, captureFee, CkycSearchRequest } from "./src/adapters";
 import { GoLivePass, PassRow } from "./src/Pass";
 import { Button, Chip, DemoPaths, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
@@ -103,6 +104,9 @@ function Root() {
   const [evidence, setEvidence] = useState<EvidenceResult | null>(null);
   const [evBusy, setEvBusy] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);
+  const [assistOpen, setAssistOpen] = useState(false);
+  const [assistSeed, setAssistSeed] = useState<string | null>(null);
+  const openAssist = (seed?: string) => { setAssistSeed(seed || null); setAssistOpen(true); };
 
   const [pan, setPan] = useState("ABCPR0000X");
   const [panEdit, setPanEdit] = useState(false);
@@ -367,6 +371,35 @@ function Root() {
   }, [biz, route, slot, slotLabel, namesTone, site, siteMode, docPlan, evidence, c]);
   const ready = !passRows.some((x) => x.tone === "bad");
 
+  /* What the assistant knows: the seller's case as the rules left it. Nothing else. */
+  const assistCase = useMemo(() => {
+    const docs = Object.fromEntries((names?.ai.documents || []).map((d) => [d.doc, d.name]));
+    return {
+      legalName: docs.PAN || NAMES.pan, shopName: brand, description: bizText,
+      category: biz ? { id: biz.policy.id, label: biz.policy.label, status: biz.status, reason: biz.policy.reason, extraDocs: biz.policy.extraDocs || [] } : null,
+      entity: entity ? DOCPLAN.ENTITIES[entity].label : null, have: have.map((k) => DOCPLAN.HAVE[k].label),
+      plan: docPlan ? docPlan.items.map((i) => ({ label: i.label, status: i.status })) : [],
+      channel: siteMode, siteUrl: site?.finalUrl || siteUrl, siteMissing: site?.kind === "site" ? site.missing.map((k) => site.pages[k]?.label || k) : [],
+      route, slot: slotLabel,
+      names: (names?.ai.comparisons || []).map((x) => ({ doc: x.doc, name: docs[x.doc] || "", verdict: x.verdict })),
+      evidence: (evidence?.grid.flags || []).map((f) => ({ row: f.row, source: f.source, why: f.why })),
+      pass: step >= 4 ? passRows.map((p) => ({ label: p.label, tone: p.tone })) : [],
+    };
+  }, [names, brand, bizText, biz, entity, have, docPlan, siteMode, site, siteUrl, route, slotLabel, evidence, passRows, step]);
+  // First questions, picked from what is still open in her case.
+  const assistStarters = useMemo(() => {
+    const out: string[] = [];
+    if (biz?.status === "not_supported") out.push(c.aq.whyBlocked);
+    if (biz?.status === "needs_review") out.push(c.aq.reviewer);
+    for (const it of docPlan?.items || []) if (it.status === "missing") out.push(c.askHowQ(it.label));
+    if (site?.kind === "site") for (const k of site.missing) out.push(c.aq.page(site.pages[k]?.label || k));
+    if (bankVerdict && bankVerdict !== "match") out.push(c.aq.bank);
+    if ((evidence?.grid.flags || []).some((f) => f.state === "bad")) out.push(c.aq.evidence);
+    if (route === "video") out.push(c.aq.video);
+    out.push(c.aq.describe, c.aq.fee);
+    return Array.from(new Set(out)).slice(0, 5);
+  }, [biz, docPlan, site, bankVerdict, evidence, route, c]);
+
   function restart() {
     setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null); setSiteMode(null); setEntity(null); setHave([]); setHaveDone(false); setEvPhotos({}); setEvMismatch(false); setEvidence(null);
     setPreset("priya"); setBizText(PRESETS.priya[lang]); go(0);
@@ -618,6 +651,10 @@ function Root() {
                     <View style={{ marginLeft: 30, padding: 10, borderRadius: r.md, backgroundColor: th.surface, borderWidth: 1, borderColor: th.line, gap: 2 }}>
                       <Txt th={th} v="smallMed">{it.how.what} · {it.how.time}</Txt>
                       <Txt th={th} v="small" color={th.muted}>{it.how.how}</Txt>
+                      <Pressable onPress={() => openAssist(c.askHowQ(it.label))} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
+                        <Icon name="message-circle" size={14} color={th.brand} />
+                        <Txt th={th} v="smallMed" color={th.brand}>{c.askHow}</Txt>
+                      </Pressable>
                     </View>
                   ) : null}
                 </View>
@@ -795,6 +832,7 @@ function Root() {
                 <Icon name="shield" size={14} color={th.pos} />
                 <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>{c.promise}</Txt>
               </View>
+              {!ready ? <Button th={th} compact icon="message-circle" label={c.assistFix} onPress={() => openAssist(c.assistFixQ)} /> : null}
               <Button th={th} kind="secondary" compact icon="folder" label={c.caseCta} onPress={() => setCaseOpen(true)} />
             </>
           )} />
@@ -855,6 +893,11 @@ function Root() {
             </Pressable>
           ))}
         </View>
+        {step >= 1 && step <= 4 ? (
+          <Pressable onPress={() => openAssist()} accessibilityRole="button" accessibilityLabel={c.assist.title} style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" }}>
+            <Icon name="message-circle" size={20} color={th.brand} />
+          </Pressable>
+        ) : null}
         {!wide ? (
           <Pressable onPress={() => setHowOpen(true)} accessibilityRole="button" accessibilityLabel={c.howItWorks} style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" }}>
             <Icon name="help-circle" size={20} color={th.muted} />
@@ -876,6 +919,15 @@ function Root() {
         <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingTop: 18, gap: 14, paddingBottom: 28 }} keyboardShouldPersistTaps="handled">
           {screen}
         </ScrollView>
+        {step >= 1 && step <= 4 ? (
+          <View pointerEvents="box-none" style={{ alignItems: "flex-end", paddingHorizontal: 14, marginTop: -58, marginBottom: 10, zIndex: 5 }}>
+            <Pressable onPress={() => openAssist()} accessibilityRole="button" accessibilityLabel={c.assist.title}
+              style={({ hovered }: any) => ({ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 10, paddingHorizontal: 14, borderRadius: r.pill, backgroundColor: hovered ? th.brandPress : th.brand, shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 })}>
+              <Icon name="message-circle" size={16} color="#fff" />
+              <Text style={{ fontFamily: font.bodySemi, fontSize: 14, color: "#fff" }}>{c.assistFab}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, gap: 8, backgroundColor: step === 4 ? th.canvas : th.surface, borderTopWidth: 1, borderTopColor: th.line }}>{footer}</View>
       </KeyboardAvoidingView>
     </View>
@@ -921,6 +973,9 @@ function Root() {
       <Sheet th={th} wide={wide} visible={caseOpen} onClose={() => setCaseOpen(false)} title={c.caseTitle}>
         <CaseFile th={th} c={c} biz={biz} bizText={bizText} ask={ask} entity={entity} plan={docPlan} site={siteMode === "site" ? site : null} names={names?.ai || null} route={route} slotLabel={slotLabel} evidence={evidence} rows={passRows} brand={brand} pan={pan} />
       </Sheet>
+      <Assistant th={th} t={c.assist} lang={lang} visible={assistOpen} onClose={() => setAssistOpen(false)} caseData={assistCase} starters={assistStarters}
+        seed={assistSeed} onSeedUsed={() => setAssistSeed(null)} wide={wide} mic={(onText) => <MicButton th={th} lang={lang} onText={onText} />}
+        onLog={(title, json, ms, note) => addLog({ kind: note === "rule" ? "rule" : "ai", title, json, ms, note })} />
       <Sheet th={th} wide={wide} visible={howOpen} onClose={() => setHowOpen(false)} title={c.howItWorks}>
         <HowItWorks th={th} step={step} log={log} srv={srv} mode={mode} setMode={setMode} live={live} />
       </Sheet>
