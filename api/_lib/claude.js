@@ -93,6 +93,11 @@ const SCHEMAS = {
       required: ["policy_id", "category_label", "confidence", "question", "explanation"],
     },
   }),
+  gloss: {
+    name: "report_gloss",
+    description: "Give a short English gloss of a business description written in an Indian script.",
+    input_schema: { type: "object", properties: { english: { type: "string", description: "Plain English, one or two sentences, keep product and channel words." } }, required: ["english"] },
+  },
   names: {
     name: "report_names",
     description: "Report the names read from the documents and how each compares with the PAN name.",

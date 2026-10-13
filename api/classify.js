@@ -7,14 +7,15 @@ const { classifyPrompt, callClaude, cors, readBody, POLICY, SCHEMAS } = require(
 const { retrieve } = require("./_lib/retrieve");
 
 const K = 8;
-// Decision thresholds (documented in the build log; tuned on the eval set).
+// Decision thresholds (documented in the build log; tuned on eval/classify.json).
 const T_DECIDE = 0.6;   // below this we do not state a verdict
-const T_MIXED = 0.75;   // if candidates disagree on status, need this much to decide without asking
+const T_MIXED = 0.75;   // a strong alternative with a different status needs this much confidence to decide without a human
+const STRONG_ALT = 0.6; // relative retrieval score that makes an alternative "strong"
 
 function decide(ai, candidates, qa) {
   const chosen = POLICY.find((p) => p.id === ai.policy_id) || null;
-  const statuses = new Set(candidates.slice(0, 3).map((c) => c.status));
-  const mixed = statuses.size > 1;
+  // Mixed = a strong alternative (retrieval score ≥ STRONG_ALT, not the chosen row) carries a different status.
+  const mixed = Boolean(chosen) && candidates.some((c) => c.id !== chosen.id && c.score >= STRONG_ALT && c.status !== chosen.status);
   const conf = Number(ai.confidence) || 0;
   const alreadyAsked = Boolean(qa && qa.question);
 
@@ -36,7 +37,13 @@ module.exports = async (req, res) => {
   try {
     const { text, lang, qa } = await readBody(req);
     if (!text || typeof text !== "string" || text.length > 2000) return res.status(400).json({ error: "text is required (max 2000 chars)" });
-    const query = qa && qa.answer ? `${text}\n${qa.answer}` : text;
+    // Descriptions in Devanagari, Telugu etc. never reach the Latin keyword index, so gloss them first.
+    let gloss = null;
+    if (/[\u0900-\u0DFF]/.test(text)) {
+      const g = await callClaude([{ type: "text", text: `Gloss this business description in plain English (one or two sentences, keep product, service and channel words):\n"""${text.slice(0, 800)}"""` }], { maxTokens: 200, schema: "gloss" });
+      gloss = g.json.english || null;
+    }
+    const query = [text, gloss, qa && qa.answer].filter(Boolean).join("\n");
     let { candidates, queryTerms } = retrieve(query, K);
     // Always keep the catch-all reachable so the model can say "none of these" honestly.
     if (!candidates.some((c) => c.id === "others.others")) candidates = [...candidates, POLICY.find((p) => p.id === "others.others")];
@@ -49,7 +56,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ai: json, decision, model, ms: Date.now() - started,
       candidates: candidates.map(({ id, label, categoryLabel, status, score, hits }) => ({ id, label, categoryLabel, status, score, hits })),
-      queryTerms,
+      queryTerms, gloss,
     });
   } catch (e) {
     return res.status(e.status || 500).json({ error: e.message || "Server error" });
