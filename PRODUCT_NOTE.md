@@ -19,14 +19,14 @@ The most repeated complaint across every channel is "paid, then rejected, no rea
 
 ## The product
 
-**Four checks before the pay button, one question at a time, about 90 seconds, in the merchant app.**
+**Every reason she'd be rejected, found and fixed before the pay button. One question at a time, about 90 seconds, in the merchant app.**
 
 1. **Category.** She describes what she sells, by voice or text, in Hinglish. The description is matched against Razorpay's published onboarding taxonomy (340 sub-categories; 25 blocked under Terms §17, 74 human-reviewed). A retriever picks 8 candidates, the model chooses only among those, and a fixed decision policy turns confidence into *decided / ask one question / a reviewer decides*. Blocked means no fee, ever.
 2. **KYC route.** A consented registry lookup says instant or video call. If video, she sees what to keep ready and books a slot now.
 3. **Names.** The model reads PAN, Aadhaar and bank proof; a deterministic engine (order, initials, honorifics, abbreviations, Devanagari and Telugu, Indian phonetic variants) scores the match the way the ₹1 bank check will, and names the cheapest fix.
 4. **Website.** If she'll take payments on a site, it's fetched the way a reviewer opens it and checked for terms, privacy, refund, shipping and contact pages.
 
-The result is a go-live pass with four stamps. A red stamp jumps to its fix. Payment is possible only when nothing is red.
+The result is a go-live pass with four stamps. A red stamp jumps to its fix, **and the fix is done inside the app**: a missing refund or shipping page is written for her business, copy-ready; a bank name mismatch produces the branch letter with her exact PAN name; a category that needs review produces the reviewer's likely questions with her answers pre-filled from what she said, so the first review round is the last. Payment is possible only when nothing is red.
 
 ## Why mobile, and why in the app
 
@@ -34,6 +34,7 @@ Onboarding already happens on the phone for this segment; clarifications today h
 
 ## Key decisions
 
+- **The model has two jobs with two guardrails.** Reading (category, document names): schema-constrained, and the rules decide. Writing (policy pages, reviewer answers): every draft is labelled, uses [brackets] for anything unknown, invents no registrations, and never changes a verdict. The branch letter needs no model at all.
 - **The model reads; rules decide.** Eligibility comes from the taxonomy row, verdicts from the name engine, fees from a table. The model's verdict is overridden when the engine disagrees, and every disagreement is logged.
 - **Ask or defer rather than guess.** 21% of test cases get one clarifying question or go to a human. A blocked-term tripwire withholds a green stamp whenever a blocked domain is mentioned.
 - **Explain what, never why.** AML tipping-off rules forbid revealing risk signals. Pre-flight explains requirements only, which is also why this is harder than "better error messages" and why it hasn't shipped.

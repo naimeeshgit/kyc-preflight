@@ -312,3 +312,14 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
 - **Interaction rewrite:** step 1 was one screen with a text box, examples, results and a website panel stacked. It now asks one thing at a time (what you sell → one clarifying question if needed → where customers pay you → website link), and each answered question collapses to a row the seller can tap to change.
 - **Voice:** a mic on every text field through the browser's speech recognition (en-IN, hi-IN), free and on-device, because many first-time sellers would rather speak Hinglish than type it. A server adapter for Gnani ASR sits behind the same interface; the key lives only in the server environment.
 - **Steps 10 and 12** (clarification rounds after submission; post-activation holds) are deliberately out of scope and named as the next product in the note.
+
+### 6.10 From a linter to a product (13 Oct, 19:35–20:05 IST)
+
+- **Trigger (my review):** I used the finished flow as the merchant and it felt like a linter: four verdicts, then "go fix it yourself". A check is not a product. The complaint that cost merchants weeks on Reddit was never the verdict; it was doing the fix alone, one round at a time.
+- **Decision:** every red stamp becomes fixable inside the app. Three actions, chosen because each maps to a documented failure and each is safe to automate:
+  1. **Write the missing policy page** (terms, privacy, refund, shipping, contact) for this business, from what the seller said. Maps to "add a page every few days".
+  2. **Draft the branch letter** for a bank name mismatch, with the exact PAN name and the account name as read. Deterministic; no model needed. Maps to the four-month middle-name case.
+  3. **Draft the reviewer's questions and the seller's answers** for a category that needs review, with [brackets] where the seller must fill. Maps to clarification rounds at three days each.
+- **Guardrail, and why it matters:** this gives the model a second role. Reading is schema-constrained and the rules decide. Writing is different: every draft is labelled a draft, uses [brackets] for anything unknown, invents no registrations or numbers, never changes a verdict, and the seller reviews it before it goes anywhere. The two roles have two guardrails, and the call log shows which one ran.
+- **Tested live:** the astrology case produced five reviewer questions with answers drawn only from the description and brackets for session length, pricing and refund terms. Exactly the questions a Razorpay reviewer asks that category.
+- **Pitch change:** from "a check before you pay" to "every reason you'd be rejected, found and fixed before you pay." The note and video script were updated to match.
