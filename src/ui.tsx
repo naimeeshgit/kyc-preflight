@@ -61,35 +61,28 @@ export function Chip({ th, label, on, onPress, icon }: { th: Theme; label: strin
   );
 }
 
-/** A row of tappable demo paths, so a reviewer can walk every branch without typing. */
+/** A slim row of tappable demo paths, so a reviewer can walk every branch without typing. */
 export type DemoPath = { key: string; label: string; tag?: string; tone?: Tone; on?: boolean; onPress: () => void };
 export function DemoPaths({ th, title, paths }: { th: Theme; title: string; paths: DemoPath[] }) {
   return (
-    <View style={{ gap: 8, padding: 12, borderRadius: r.md, borderWidth: 1, borderStyle: "dashed", borderColor: th.line }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <Icon name="shuffle" size={13} color={th.muted} />
-        <Text style={{ fontFamily: font.bodySemi, fontSize: 12, color: th.muted, letterSpacing: 0.3 }}>{title}</Text>
-      </View>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {paths.map((p) => {
-          const [fg] = toneColors(th, p.tone || "info");
-          return (
-            <Pressable key={p.key} accessibilityRole="button" accessibilityState={{ selected: !!p.on }} onPress={p.onPress}
-              style={({ hovered }: any) => ({
-                borderWidth: 1, borderColor: p.on ? th.brand : th.line, backgroundColor: p.on ? th.brandTint : hovered ? th.sunken : th.surface,
-                borderRadius: r.md, paddingVertical: 7, paddingHorizontal: 11, gap: 2, maxWidth: "100%",
-              })}>
-              <Text style={{ fontFamily: p.on ? font.bodySemi : font.bodyMed, fontSize: 13.5, color: p.on ? th.brand : th.ink }}>{p.label}</Text>
-              {p.tag ? (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: fg }} />
-                  <Text style={{ fontFamily: font.bodyMed, fontSize: 11.5, color: th.muted }}>{p.tag}</Text>
-                </View>
-              ) : null}
-            </Pressable>
-          );
-        })}
-      </View>
+    <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+      <Text style={{ fontFamily: font.bodySemi, fontSize: 12, color: th.faint, marginRight: 2 }}>{title}</Text>
+      {paths.map((p) => {
+        const [fg] = toneColors(th, p.tone || "info");
+        return (
+          <Pressable key={p.key} accessibilityRole="button" accessibilityLabel={p.tag ? `${p.label}: ${p.tag}` : p.label} accessibilityState={{ selected: !!p.on }} onPress={p.onPress}
+            style={({ hovered }: any) => ({
+              flexDirection: "row", alignItems: "center", gap: 6, maxWidth: "100%",
+              borderWidth: 1, borderColor: p.on ? th.brand : th.line, backgroundColor: p.on ? th.brandTint : hovered ? th.sunken : th.surface,
+              borderRadius: r.pill, paddingVertical: 5, paddingHorizontal: 10,
+            })}>
+            {p.tone ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: fg }} /> : null}
+            <Text numberOfLines={1} style={{ fontFamily: p.on ? font.bodySemi : font.bodyMed, fontSize: 12.5, color: p.on ? th.brand : th.ink, flexShrink: 1 }}>
+              {p.label}{p.tag ? <Text style={{ fontFamily: font.body, color: th.muted }}>{`  ${p.tag}`}</Text> : null}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }

@@ -13,7 +13,7 @@ const TOOL = {
   input_schema: {
     type: "object",
     properties: {
-      message: { type: "string", description: "Short, plain answer. 2-6 sentences or a short numbered list. No markdown symbols except numbered lines." },
+      message: { type: "string", description: "Short and plain: one question, or 1-4 sentences, or a short numbered list. No markdown symbols except numbered lines." },
       draft: {
         type: ["object", "null"],
         description: "Only when the seller asked for a document or text she will copy and use. Otherwise null.",
@@ -66,11 +66,13 @@ Rules:
 - Verdicts come from the app's rules. Never say she will be approved, never change or second-guess a status, never promise timelines from the gateway. You can explain what a requirement is and how to meet it.
 - Never help reword, hide or misdescribe a blocked or restricted business. If her category is not supported, say so plainly and help only with honest alternatives (e.g. selling only the supported part of her range).
 - Never explain risk or fraud signals; explain requirements only.
+- Drafting works like a short interview. When she asks for a draft, first check her case: if one or two facts that would change the text are missing (a refund window, delivery time, which bank and branch, session length, price range), ask ONE short question, with 2-4 likely answers in "suggestions" and the last one always "${lang === "hi" ? "Bas draft kar dijiye" : "Just draft it"}". Ask at most two questions across the conversation, one per turn, then draft. If the case already has what you need, or she says to just draft it, draft now with [brackets] for the rest. Don't ask about things already in her case.
+- Bank name letter: addressed to her branch, quotes her PAN name and the account name exactly as in the case, asks to update the account holder name to match the PAN, lists PAN copy as enclosure.
 - Drafts (policy pages, letters, product or business descriptions, reviewer answers, a declaration of business): put them in "draft". Labelled as a draft, plain text, [brackets] for anything unknown (address, GSTIN, account number, dates). Never invent registration or licence numbers, legal citations or facts she hasn't given.
 - How-to answers (Udyam, FSSAI, bank name change, video KYC prep): short numbered steps with where to go and roughly how long it takes. When the document plan gives a "how" for an item, use its timing and facts exactly; don't contradict the app. Don't quote button labels or screen wording of government portals; describe the step instead ("register with your Aadhaar and verify the OTP"). Government portals: udyamregistration.gov.in, foscos.fssai.gov.in, gst.gov.in. No legal or tax advice beyond that; suggest a CA when it truly depends.
 - Language: ${lang === "hi" ? "reply in simple Hinglish (Hindi in Latin script). Drafts meant for reviewers or customers stay in simple English." : "simple English."}
 - Keep the message short; the draft carries the length.
-- suggestions: 2-3 next questions she might tap, specific to what's still open in her case.
+- suggestions: when you asked a question, the likely answers (see above); otherwise 2-3 next things she might tap, specific to what's still open in her case.
 
 Answer by calling reply.`;
 }

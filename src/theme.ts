@@ -4,27 +4,27 @@ import { useColorScheme } from "react-native";
 
 export const light = {
   dark: false,
-  canvas: "#F3F5F9",
+  canvas: "#F4F2EE",
   surface: "#FFFFFF",
-  sunken: "#F6F8FB",
-  ink: "#0E1726",
-  muted: "#5A6474",
-  faint: "#8A94A3",
-  line: "#E3E7EE",
-  brand: "#1563F2",
-  brandPress: "#0B4FCC",
-  brandTint: "#EAF1FE",
-  navy: "#0B1E3F",
-  navyInk: "#FFFFFF",
-  navyMuted: "#A9B8D6",
-  pos: "#00855D",
-  posTint: "#E4F4EC",
-  warn: "#B85000",
-  warnTint: "#FFF1E5",
-  neg: "#C92A1E",
-  negTint: "#FDECEA",
-  code: "#EEF2F8",
-  scrim: "rgba(10,18,32,0.45)",
+  sunken: "#F7F5F1",
+  ink: "#1B1B1A",
+  muted: "#5E5A54",
+  faint: "#9B968E",
+  line: "#E6E1D8",
+  brand: "#2F54C8",
+  brandPress: "#2545A8",
+  brandTint: "#EEF1FB",
+  navy: "#F1ECE3",
+  navyInk: "#1B1B1A",
+  navyMuted: "#8C867C",
+  pos: "#1F7A4D",
+  posTint: "#E9F3EC",
+  warn: "#9A5B07",
+  warnTint: "#FAF0E0",
+  neg: "#B3261E",
+  negTint: "#FBEBE9",
+  code: "#F3F0EA",
+  scrim: "rgba(27,27,26,0.35)",
 };
 export type Theme = typeof light;
 
@@ -53,13 +53,15 @@ export const dark: Theme = {
   scrim: "rgba(0,0,0,0.6)",
 };
 
+// One calm light theme everywhere; the dark palette is kept only for reference.
 export function useTheme(): Theme {
-  return useColorScheme() === "dark" ? dark : light;
+  void useColorScheme;
+  return light;
 }
 
 export const font = {
-  display: "TASAOrbiter_700Bold",
-  displayMed: "TASAOrbiter_600SemiBold",
+  display: "Inter_700Bold",
+  displayMed: "Inter_600SemiBold",
   body: "Inter_400Regular",
   bodyMed: "Inter_500Medium",
   bodySemi: "Inter_600SemiBold",
@@ -69,8 +71,8 @@ export const font = {
 };
 
 export const type = {
-  h1: { fontFamily: font.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.3 },
-  h2: { fontFamily: font.display, fontSize: 21, lineHeight: 27, letterSpacing: -0.2 },
+  h1: { fontFamily: font.display, fontSize: 26, lineHeight: 32, letterSpacing: -0.6 },
+  h2: { fontFamily: font.display, fontSize: 19, lineHeight: 25, letterSpacing: -0.3 },
   h3: { fontFamily: font.bodySemi, fontSize: 16, lineHeight: 22 },
   body: { fontFamily: font.body, fontSize: 15, lineHeight: 22 },
   bodyMed: { fontFamily: font.bodyMed, fontSize: 15, lineHeight: 22 },

@@ -416,9 +416,6 @@ function Root() {
         <Txt th={th} v="h1">{c.s0Title}</Txt>
         <Txt th={th} color={th.muted}>{c.s0Body}</Txt>
         <PassPreview th={th} labels={c.s0Checks} />
-        <View style={{ gap: 12, marginTop: 4 }}>
-          {c.s0Why.map(([ic, t], i) => <IconRow key={i} th={th} icon={ic}><Txt th={th} color={th.muted}>{t}</Txt></IconRow>)}
-        </View>
         <Pressable onPress={() => setFeeOpen(true)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", paddingVertical: 6 }}>
           <Icon name="info" size={16} color={th.brand} />
           <Txt th={th} v="bodyMed" color={th.brand}>{c.s0Fee}</Txt>
@@ -446,7 +443,6 @@ function Root() {
             </View>
             <MicButton th={th} lang={lang} onText={(t) => setAsk({ ...ask, answer: t })} />
           </View>
-          <Txt th={th} v="small" color={th.muted}>{c.askWhy}</Txt>
           {preset && PRESETS[preset].answers ? (
             <DemoPaths th={th} title={c.tryAnswer} paths={PRESETS[preset].answers![lang].map((a, i) => ({
               key: String(i), label: a, on: ask.answer === a, onPress: () => { const q = { ...ask, answer: a }; setAsk(q); runClassify(q); },
@@ -499,15 +495,15 @@ function Root() {
                 </View>
                 <Status th={th} tone={st === "supported" ? "ok" : st === "needs_review" ? "warn" : "bad"} label={c[biz.status]} />
               </View>
-              <Txt th={th}>{biz.ai.explanation}</Txt>
               {biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.reviewerWhy === "mixed_candidates" ? c.mixedConf : biz.reviewerWhy === "blocked_terms" ? c.blockedTerms : c.lowConf}</Txt> : null}
               {biz.status === "needs_review" && biz.policy.reason && !biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.policy.reason}</Txt> : null}
-              {biz.candidates && biz.candidates.length > 1 ? (
+              {biz.candidates && biz.candidates.length >= 1 ? (
                 <Pressable onPress={() => setShowCands((v) => !v)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <Icon name={showCands ? "chevron-up" : "chevron-down"} size={14} color={th.muted} />
                   <Txt th={th} v="smallMed" color={th.muted}>{c.considered(biz.candidates.length)}</Txt>
                 </Pressable>
               ) : null}
+              {showCands ? <Txt th={th} v="small" color={th.muted}>{biz.ai.explanation}</Txt> : null}
               {showCands && biz.candidates ? (
                 <View style={{ gap: 6 }}>
                   {biz.candidates.map((x) => {
@@ -534,7 +530,7 @@ function Root() {
             {st === "needs_review" ? (
               <Notice th={th} tone="warn" title={c.needs_review}>
                 <Txt th={th}>{c.reviewNote}</Txt>
-                <Button th={th} kind="secondary" compact icon="edit-3" label={c.writeAnswers} onPress={() => makeDraft({ kind: "clarification", lang, business: { description: bizText, category: biz.policy.category, label: biz.policy.label, status: biz.policy.status, reason: biz.policy.reason } })} />
+                <Button th={th} kind="secondary" compact icon="edit-3" label={c.writeAnswers} onPress={() => openAssist(c.aq.reviewer)} />
               </Notice>
             ) : null}
           </Reveal>
@@ -570,7 +566,7 @@ function Root() {
                     ["social", "instagram.com/gulmohar.jewels", "info"],
                     ["real", "boat-lifestyle.com", "info"],
                   ] as const).map(([k, url, tone]) => ({
-                    key: k, label: c.sitePaths[k], tag: url.replace(/^https?:\/\//, "").replace(/\/index\.html$/, ""), tone, on: siteUrl === url,
+                    key: k, label: c.sitePaths[k], tone, on: siteUrl === url,
                     onPress: () => { setSiteUrl(url); runSite(url); },
                   }))} />
                   <Pressable onPress={() => setSiteMode(null)} accessibilityRole="button"><Txt th={th} v="smallMed" color={th.brand}>{c.q2Back}</Txt></Pressable>
@@ -589,7 +585,7 @@ function Root() {
                           </IconRow>
                           {!p.found || p.thin ? (
                             <View style={{ paddingLeft: 30 }}>
-                              <Button th={th} kind="secondary" compact icon="edit-3" label={c.writePage} onPress={() => makeDraft({ kind: "policy", page: k, lang, site: site.finalUrl, business: { description: bizText, category: biz.policy.category, label: biz.policy.label } })} />
+                              <Button th={th} kind="secondary" compact icon="edit-3" label={c.writePage} onPress={() => openAssist(c.aq.page(p.label))} />
                             </View>
                           ) : null}
                         </View>
@@ -651,7 +647,6 @@ function Root() {
                   {it.status === "missing" && it.how ? (
                     <View style={{ marginLeft: 30, padding: 10, borderRadius: r.md, backgroundColor: th.surface, borderWidth: 1, borderColor: th.line, gap: 2 }}>
                       <Txt th={th} v="smallMed">{it.how.what} · {it.how.time}</Txt>
-                      <Txt th={th} v="small" color={th.muted}>{it.how.how}</Txt>
                       <Pressable onPress={() => openAssist(c.askHowQ(it.label))} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
                         <Icon name="message-circle" size={14} color={th.brand} />
                         <Txt th={th} v="smallMed" color={th.brand}>{c.askHow}</Txt>
@@ -664,7 +659,6 @@ function Root() {
               {docPlan.upgrade ? (
                 <View style={{ padding: 10, borderRadius: r.md, backgroundColor: th.brandTint, gap: 2 }}>
                   <Txt th={th} v="smallMed" color={th.brand}>{docPlan.upgrade.title}</Txt>
-                  <Txt th={th} v="small">{docPlan.upgrade.body}</Txt>
                 </View>
               ) : null}
             </Panel>
@@ -724,7 +718,6 @@ function Root() {
               <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
                 {c.times.map((tm) => <Chip key={tm} th={th} icon="clock" label={tm} on={slot === tm} onPress={() => { setSlot(tm); haptic("light"); }} />)}
               </View>
-              <Txt th={th} v="small" color={th.faint}>{c.slotNote}</Txt>
             </Panel>
           </Reveal>
         ) : null}
@@ -792,17 +785,15 @@ function Root() {
                     <Status th={th} tone={verdicts[d].verdict === "match" ? "ok" : verdicts[d].verdict === "likely_fail" || d === "Bank" ? "bad" : "warn"} label={d === "Bank" && verdicts[d].verdict === "unclear" ? c.bankPartial : c[verdicts[d].verdict]} />
                   </View>
                   <NameLine th={th} c={c} tokens={compareNames(legal, byDoc[d] || "")} />
-                  <Txt th={th} v="small" color={th.muted}>{verdicts[d].reason}</Txt>
+                  {verdicts[d].verdict !== "match" ? <Txt th={th} v="small" color={th.muted}>{verdicts[d].reason}</Txt> : null}
                 </View>
               ) : null)}
             </Panel>
             {bankFail ? (
               <Panel th={th} tint>
                 <Txt th={th} v="h3">{c.fixTitle}</Txt>
-                {verdicts.Bank?.fix ? <Txt th={th} color={th.muted}>{verdicts.Bank.fix}</Txt> : null}
                 {bankVariant === "short" && !photos.bank ? <Button th={th} label={c.fixSwap} icon="repeat" onPress={() => { setBankVariant("full"); runNames("full"); }} /> : null}
-                <Button th={th} kind="secondary" label={c.fixLetter} icon="file-text" onPress={branchLetter} />
-                <Button th={th} kind="quiet" label={c.fixBranch} icon="map-pin" onPress={() => setBranchOpen(true)} />
+                <Button th={th} kind="secondary" label={c.fixLetter} icon="message-circle" onPress={() => openAssist(c.aq.bank)} />
               </Panel>
             ) : null}
           </Reveal>
@@ -894,11 +885,6 @@ function Root() {
             </Pressable>
           ))}
         </View>
-        {step >= 1 && step <= 4 ? (
-          <Pressable onPress={() => openAssist()} accessibilityRole="button" accessibilityLabel={c.assist.title} style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" }}>
-            <Icon name="message-circle" size={20} color={th.brand} />
-          </Pressable>
-        ) : null}
         {!wide ? (
           <Pressable onPress={() => setHowOpen(true)} accessibilityRole="button" accessibilityLabel={c.howItWorks} style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" }}>
             <Icon name="help-circle" size={20} color={th.muted} />
@@ -1005,7 +991,7 @@ function Root() {
               <Button th={th} kind="secondary" compact icon="cpu" label="See how it works" onPress={() => setHowOpen(true)} />
               <Txt th={th} v="tiny" color={th.faint}>Concept prototype for the Razorpay × ISB Build Challenge. Not a Razorpay product. The seller and documents are fictional.</Txt>
             </View>
-            <View style={{ width: 390, height: phoneH, borderRadius: 40, borderWidth: 10, borderColor: th.dark ? "#2A3344" : "#101828", overflow: "hidden", backgroundColor: th.surface, shadowColor: "#0B1E3F", shadowOpacity: 0.18, shadowRadius: 40, shadowOffset: { width: 0, height: 20 } }}>
+            <View style={{ width: 390, height: phoneH, borderRadius: 40, borderWidth: 10, borderColor: "#1B1B1A", overflow: "hidden", backgroundColor: th.surface, shadowColor: "#3A2F20", shadowOpacity: 0.14, shadowRadius: 40, shadowOffset: { width: 0, height: 20 } }}>
               {app}
             </View>
           </View>
