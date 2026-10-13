@@ -103,7 +103,11 @@ module.exports = async (req, res) => {
 
     const { json, model } = await callClaude([{ type: "text", text: prompt(lang === "hi" ? "hi" : "en", msgs, c) }], { maxTokens: 2000, tool: TOOL });
     const draft = json.draft && json.draft.body ? { title: clip(json.draft.title, 120) || "Draft", body: String(json.draft.body), notes: (json.draft.notes || []).slice(0, 3) } : null;
-    return res.status(200).json({ message: String(json.message || ""), draft, suggestions: (json.suggestions || []).slice(0, 3), model, ms: Date.now() - started });
+    let suggestions = (json.suggestions || []).slice(0, 3);
+    // A question before a draft always offers the way out.
+    const just = lang === "hi" ? "Bas draft kar dijiye" : "Just draft it";
+    if (!draft && /\?\s*$/.test(String(json.message || "")) && /draft|write|likh|letter|policy|page|answers|jawab/i.test(last.content + " " + (msgs[msgs.length - 3]?.content || "")) && !suggestions.some((x) => /just draft|bas draft/i.test(x))) suggestions = [...suggestions, just];
+    return res.status(200).json({ message: String(json.message || ""), draft, suggestions, model, ms: Date.now() - started });
   } catch (e) {
     return res.status(e.status || 500).json({ error: e.message || "Server error" });
   }

@@ -78,7 +78,7 @@ export function DemoPaths({ th, title, paths }: { th: Theme; title: string; path
             })}>
             {p.tone ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: fg }} /> : null}
             <Text numberOfLines={1} style={{ fontFamily: p.on ? font.bodySemi : font.bodyMed, fontSize: 12.5, color: p.on ? th.brand : th.ink, flexShrink: 1 }}>
-              {p.label}{p.tag ? <Text style={{ fontFamily: font.body, color: th.muted }}>{`  ${p.tag}`}</Text> : null}
+              {p.label}{p.tag && p.on ? <Text style={{ fontFamily: font.body, color: th.muted }}>{`  ${p.tag}`}</Text> : null}
             </Text>
           </Pressable>
         );

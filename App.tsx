@@ -581,7 +581,7 @@ function Root() {
                       {Object.entries(site.pages).map(([k, p]) => (
                         <View key={k} style={{ gap: 6 }}>
                           <IconRow th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
-                            <Txt th={th}>{p.label}{p.found && p.linkText ? <Txt th={th} v="small" color={th.muted}>  · {p.linkText}</Txt> : null}</Txt>
+                            <Txt th={th}>{p.label}</Txt>
                           </IconRow>
                           {!p.found || p.thin ? (
                             <View style={{ paddingLeft: 30 }}>
@@ -986,7 +986,7 @@ function Root() {
               </View>
               <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", padding: 10, borderRadius: r.md, borderWidth: 1, borderStyle: "dashed", borderColor: th.line }}>
                 <Icon name="shuffle" size={14} color={th.muted} />
-                <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>Every screen has a dashed "Try a path" box. Tap one to see another outcome: blocked, needs review, a clarifying question, an extra licence, missing website pages, a video KYC call, a bank name mismatch or a catalog that doesn't add up.</Txt>
+                <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>Every screen has a "Try" row. Tap a chip to see another outcome: blocked, review, a question, missing pages, video KYC, a name mismatch, a catalog that doesn't add up. "Ask" opens an assistant that knows the case and drafts what's missing.</Txt>
               </View>
               <Button th={th} kind="secondary" compact icon="cpu" label="See how it works" onPress={() => setHowOpen(true)} />
               <Txt th={th} v="tiny" color={th.faint}>Concept prototype for the Razorpay × ISB Build Challenge. Not a Razorpay product. The seller and documents are fictional.</Txt>
