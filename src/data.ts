@@ -132,6 +132,11 @@ const en = {
   s0Title: "Check you'll be approved before you pay",
   s0Body: "Three quick checks, about 90 seconds. The ₹199 KYC fee is charged only after they pass.",
   s0Checks: ["Category", "KYC route", "Names"],
+  s0Why: [
+    ["slash", "No fee if your category can't be accepted."],
+    ["video", "Know now if you'll need a video call, and book it."],
+    ["user-check", "Catch name mismatches before the ₹1 bank check."],
+  ] as [string, string][],
   s0Fee: "What does the ₹199 cover?",
   s0Cta: "Start checks",
   feeTitle: "The KYC fee",
@@ -242,6 +247,11 @@ const hi: Copy = {
   s0Title: "Pay karne se pehle jaan lijiye ki approval milega",
   s0Body: "Teen chhote checks, lagbhag 90 second. ₹199 KYC fee tabhi lagegi jab checks pass ho jaayein.",
   s0Checks: ["Category", "KYC route", "Naam"],
+  s0Why: [
+    ["slash", "Category accept nahi hogi toh koi fee nahi."],
+    ["video", "Abhi pata chalega ki video call hoga ya nahi, aur book bhi kar lenge."],
+    ["user-check", "₹1 bank check se pehle naam ka mismatch pakdein."],
+  ],
   s0Fee: "₹199 kis cheez ki fee hai?",
   s0Cta: "Checks shuru karein",
   feeTitle: "KYC fee",

@@ -45,7 +45,8 @@ export default function App() {
 
 function Root() {
   const th = useTheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const phoneH = Math.max(600, Math.min(820, height - 48));
   const wide = Platform.OS === "web" && width >= 900;
   const [lang, setLang] = useState<Lang>("en");
   const c = COPY[lang];
@@ -205,6 +206,9 @@ function Root() {
         <Txt th={th} v="h1">{c.s0Title}</Txt>
         <Txt th={th} color={th.muted}>{c.s0Body}</Txt>
         <PassPreview th={th} labels={c.s0Checks} />
+        <View style={{ gap: 12, marginTop: 4 }}>
+          {c.s0Why.map(([ic, t], i) => <IconRow key={i} th={th} icon={ic}><Txt th={th} color={th.muted}>{t}</Txt></IconRow>)}
+        </View>
         <Pressable onPress={() => setFeeOpen(true)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", paddingVertical: 6 }}>
           <Icon name="info" size={16} color={th.brand} />
           <Txt th={th} v="bodyMed" color={th.brand}>{c.s0Fee}</Txt>
@@ -523,7 +527,7 @@ function Root() {
     return (
       <View style={{ flex: 1, backgroundColor: th.canvas }}>
         <StatusBar style={th.dark ? "light" : "dark"} />
-        <ScrollView contentContainerStyle={{ minHeight: "100%", alignItems: "center", justifyContent: "center", padding: 32 }}>
+        <ScrollView contentContainerStyle={{ minHeight: "100%", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View style={{ flexDirection: "row", gap: 56, alignItems: "center", maxWidth: 1040, width: "100%", justifyContent: "center" }}>
             <View style={{ width: 340, gap: 18 }}>
               <Txt th={th} v="h1" style={{ fontSize: 34, lineHeight: 40 }}>KYC Pre-flight</Txt>
@@ -536,7 +540,7 @@ function Root() {
               <Button th={th} kind="secondary" compact icon="cpu" label="See how it works" onPress={() => setHowOpen(true)} />
               <Txt th={th} v="tiny" color={th.faint}>Concept prototype for the Razorpay × ISB Build Challenge. Not a Razorpay product. The seller and documents are fictional.</Txt>
             </View>
-            <View style={{ width: 390, height: 820, borderRadius: 40, borderWidth: 10, borderColor: th.dark ? "#2A3344" : "#101828", overflow: "hidden", backgroundColor: th.surface, shadowColor: "#0B1E3F", shadowOpacity: 0.18, shadowRadius: 40, shadowOffset: { width: 0, height: 20 } }}>
+            <View style={{ width: 390, height: phoneH, borderRadius: 40, borderWidth: 10, borderColor: th.dark ? "#2A3344" : "#101828", overflow: "hidden", backgroundColor: th.surface, shadowColor: "#0B1E3F", shadowOpacity: 0.18, shadowRadius: 40, shadowOffset: { width: 0, height: 20 } }}>
               {app}
             </View>
           </View>

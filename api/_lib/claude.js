@@ -64,7 +64,11 @@ async function callClaude(content, { maxTokens = 900 } = {}) {
   if (!key) { const e = new Error("ANTHROPIC_API_KEY is not set"); e.status = 503; throw e; }
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+    headers: {
+      "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01",
+      // Keys not scoped to a workspace need the workspace id (Console → Workspaces).
+      ...(process.env.ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID } : {}),
+    },
     body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, messages: [{ role: "user", content }] }),
   });
   if (!res.ok) {
