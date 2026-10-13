@@ -383,6 +383,7 @@ function Root() {
       route, slot: slotLabel,
       names: (names?.ai.comparisons || []).map((x) => ({ doc: x.doc, name: docs[x.doc] || "", verdict: x.verdict })),
       evidence: (evidence?.grid.flags || []).map((f) => ({ row: f.row, source: f.source, why: f.why })),
+      evidenceRun: Boolean(evidence),
       pass: step >= 4 ? passRows.map((p) => ({ label: p.label, tone: p.tone })) : [],
     };
   }, [names, brand, bizText, biz, entity, have, docPlan, siteMode, site, siteUrl, route, slotLabel, evidence, passRows, step]);

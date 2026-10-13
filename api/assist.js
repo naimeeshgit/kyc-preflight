@@ -57,6 +57,11 @@ function caseBlock(c = {}) {
   if (c.plan?.length) lines.push(`Document plan: ${c.plan.map((p) => `${clip(p.label, 80)} = ${clip(p.status, 12)}${p.how ? ` (how: ${clip(p.how, 260)})` : ""}`).join("; ")}`);
   if (c.channel) lines.push(`Takes payments: ${c.channel === "site" ? `on a website ${clip(c.siteUrl, 120)}` : "via Instagram/WhatsApp/in person (Payment Links, QR)"}`);
   if (c.siteMissing?.length) lines.push(`Website pages missing: ${c.siteMissing.map((x) => clip(x, 40)).join(", ")}`);
+  if (!c.route) lines.push("KYC route: NOT CHECKED YET (happens in step 2).");
+  if (!c.names?.length) lines.push("PAN, Aadhaar and bank names: NOT CHECKED YET, no documents read (happens in step 3).");
+  if (!c.evidence?.length && !c.evidenceRun) lines.push("Business proof (Instagram, catalog, invoice): NOT CHECKED YET (happens in step 3).");
+  if (c.evidenceRun && !c.evidence?.length) lines.push("Business proof: checked, every source agrees.");
+  if (!c.pass?.length) lines.push("Go-live pass: not reached yet.");
   if (c.route) lines.push(`KYC route: ${c.route === "video" ? `video KYC call${c.slot ? `, booked ${clip(c.slot, 40)}` : ", not booked yet"}` : "instant (in the KYC registry)"}`);
   if (c.names?.length) lines.push(`Names: ${c.names.map((n) => `${clip(n.doc, 20)} "${clip(n.name, 80)}" vs PAN → ${clip(n.verdict, 20)}`).join("; ")}`);
   if (c.evidence?.length) lines.push(`Business-proof flags: ${c.evidence.map((f) => `${clip(f.row, 30)} / ${clip(f.source, 40)}: ${clip(f.why, 140)}`).join("; ")}`);
@@ -80,6 +85,7 @@ Rules:
 - Never help reword, hide or misdescribe a blocked or restricted business. If her category is not supported, say so plainly and help only with honest alternatives (e.g. selling only the supported part of her range).
 - Never explain risk or fraud signals; explain requirements only.
 - You are an assistant, not the decision-maker. Never say or imply she will be approved. When she asks "will this pass?" or similar, say plainly that nothing you write guarantees approval and the reviewer decides; then help her make the application as complete as possible.
+- Only state a status the case gives you. If a check is NOT CHECKED YET, say so and which step does it; never call a document uploaded, a name matched or a step done unless the case says it.
 - Cover all bases. After answering or drafting, if her case still has open items (a missing document, a missing website page, a red or amber row on the pass, a business-proof flag, a video KYC call to prepare for), end the message with "Still open:" and up to 4 short lines naming them, and make one suggestion the next open item. If nothing is open, say what the reviewer will look at so she is ready.
 - "Prepare me for review" means: a draft titled "Review-ready checklist" that lists, for her exact case, what the reviewer will check (category, documents, names, business proof, website if any, KYC route), the status of each from the case, what to fix, and 2-4 questions the reviewer may ask with how to answer honestly.
 - You are an assistant. You help her prepare; you cannot guarantee approval. Never say or imply she will be approved, "is all set" or "will pass"; say "ready to submit" at most, and when she is ready, remind her in one short clause that the final decision is the reviewer's.
