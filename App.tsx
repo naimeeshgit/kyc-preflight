@@ -13,6 +13,7 @@ import { font, r, Theme, useTheme } from "./src/theme";
 import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
 import { checkSite, SiteResult } from "./src/api";
+import { browserSpeechAvailable, startBrowserSpeech } from "./src/voice";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
 import { ckycSearch, captureFee, CkycSearchRequest } from "./src/adapters";
@@ -74,6 +75,7 @@ function Root() {
   const [siteUrl, setSiteUrl] = useState("");
   const [site, setSite] = useState<SiteResult | null>(null);
   const [siteBusy, setSiteBusy] = useState(false);
+  const [siteMode, setSiteMode] = useState<null | "social" | "site">(null);
 
   const [pan, setPan] = useState("ABCPR0000X");
   const [panEdit, setPanEdit] = useState(false);
@@ -223,7 +225,7 @@ function Root() {
       return;
     }
     setNames({ ai, source, recKey: source === "rec" ? variant : undefined });
-    haptic(ai.comparisons.some((x) => x.verdict === "likely_fail") ? "warning" : "success");
+    haptic(ai.comparisons.some((x) => x.verdict !== "match") ? "warning" : "success");
     addLog({ kind: source === "live" ? "ai" : "rec", title: "Read names from documents (vision)", ms, note: [model, note].filter(Boolean).join(" · "), json: ai });
     if (source === "rec") {
       const legal = ai.documents.find((d) => d.doc === "PAN")?.name || "";
@@ -234,7 +236,9 @@ function Root() {
 
   /* Readiness: rules decide what the pass shows. */
   const slotLabel = slot ? `${c.days[day]} ${slot}` : null;
-  const namesTone: Tone = !names ? "bad" : names.ai.comparisons.some((x) => x.verdict === "likely_fail") ? "bad" : names.ai.comparisons.some((x) => x.verdict === "unclear") ? "warn" : "ok";
+  // Product rule: the bank name is what the ₹1 check compares with PAN and the seller can fix it cheaply, so anything short of a match blocks payment. An Aadhaar doubt goes to a reviewer.
+  const bankVerdict = names?.ai.comparisons.find((x) => x.doc === "Bank")?.verdict;
+  const namesTone: Tone = !names ? "bad" : bankVerdict !== "match" || names.ai.comparisons.some((x) => x.verdict === "likely_fail") ? "bad" : names.ai.comparisons.some((x) => x.verdict === "unclear") ? "warn" : "ok";
   const passRows: PassRow[] = useMemo(() => {
     const catTone: Tone = !biz ? "bad" : biz.status === "supported" ? "ok" : biz.status === "needs_review" ? "warn" : "bad";
     const routeTone: Tone = !route ? "bad" : route === "instant" || slot ? "ok" : "warn";
@@ -242,13 +246,13 @@ function Root() {
       { label: c.rowCat, value: biz ? (biz.ai.category_label || biz.policy.label) : "—", tone: catTone, stamp: catTone === "ok" ? c.passed : catTone === "warn" ? c.review : c.fix, onFix: catTone === "ok" ? undefined : () => go(1) },
       { label: c.rowRoute, value: !route ? "—" : route === "instant" ? c.routeInstant : c.routeVideo(slotLabel || "—"), tone: routeTone, stamp: routeTone === "ok" ? c.passed : c.fix, onFix: routeTone === "ok" ? undefined : () => go(2) },
       { label: c.rowNames, value: namesTone === "ok" ? c.namesOk : namesTone === "warn" ? c.namesWarn : c.namesBad, tone: namesTone, stamp: namesTone === "ok" ? c.passed : namesTone === "warn" ? c.review : c.fix, onFix: namesTone === "ok" ? undefined : () => go(3) },
-      ...(site && site.kind !== "social" ? [{ label: c.rowSite, value: site.ok ? (site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk) : c.siteDown, tone: (site.ok && site.missing.length === 0 ? "ok" : "bad") as Tone, stamp: site.ok && site.missing.length === 0 ? c.passed : c.fix, onFix: site.ok && site.missing.length === 0 ? undefined : () => go(1) }] : []),
+      ...(siteMode === "site" && site && site.kind !== "social" ? [{ label: c.rowSite, value: site.ok ? (site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk) : c.siteDown, tone: (site.ok && site.missing.length === 0 ? "ok" : "bad") as Tone, stamp: site.ok && site.missing.length === 0 ? c.passed : c.fix, onFix: site.ok && site.missing.length === 0 ? undefined : () => go(1) }] : []),
     ];
-  }, [biz, route, slot, slotLabel, namesTone, site, c]);
+  }, [biz, route, slot, slotLabel, namesTone, site, siteMode, c]);
   const ready = !passRows.some((x) => x.tone === "bad");
 
   function restart() {
-    setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null);
+    setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null); setSiteMode(null);
     setPreset("priya"); setBizText(PRESETS.priya[lang]); go(0);
   }
 
@@ -276,55 +280,64 @@ function Root() {
 
   if (step === 1) {
     const st = biz?.status;
+    const siteDone = siteMode === "social" || (siteMode === "site" && site !== null);
+    const askBlock = ask && !biz && !bizBusy ? (
+      <Reveal>
+        <Panel th={th} tint>
+          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+            <Icon name="help-circle" size={18} color={th.brand} />
+            <Txt th={th} v="smallMed" color={th.brand}>{c.askTitle}</Txt>
+          </View>
+          <Txt th={th} v="h3">{ask.question}</Txt>
+          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+            <View style={{ flex: 1, borderWidth: 1.5, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface }}>
+              <TextInput value={ask.answer} onChangeText={(v) => setAsk({ ...ask, answer: v })} placeholder={c.askPlaceholder} placeholderTextColor={th.faint} accessibilityLabel={ask.question}
+                style={{ minHeight: 48, padding: 12, fontFamily: font.body, fontSize: 16, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }} />
+            </View>
+            <MicButton th={th} lang={lang} onText={(t) => setAsk({ ...ask, answer: t })} />
+          </View>
+          <Txt th={th} v="small" color={th.muted}>{c.askWhy}</Txt>
+        </Panel>
+      </Reveal>
+    ) : null;
     screen = (
       <>
-        <Txt th={th} v="h1">{c.s1Title}</Txt>
-        <Txt th={th} color={th.muted}>{c.s1Body}</Txt>
-        <View style={{ borderWidth: 1.5, borderColor: th.line, borderRadius: r.lg, backgroundColor: th.surface }}>
-          <TextInput
-            value={bizText}
-            onChangeText={(v) => { setBizText(v); setPreset(null); setBiz(null); setBizErr(null); setAsk(null); }}
-            placeholder={c.s1Placeholder}
-            placeholderTextColor={th.faint}
-            multiline
-            accessibilityLabel={c.s1Title}
-            style={{ minHeight: 112, padding: 16, fontFamily: font.body, fontSize: 16, lineHeight: 23, color: th.ink, textAlignVertical: "top", ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }}
-          />
-        </View>
-        {!biz ? (
-          <View style={{ gap: 8 }}>
-            <Txt th={th} v="smallMed" color={th.muted}>{c.examples}</Txt>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {Object.entries(PRESETS).map(([k, p]) => (
-                <Chip key={k} th={th} label={p.label} on={preset === k} onPress={() => { setPreset(k); setBizText(p[lang]); setBiz(null); setBizErr(null); }} />
-              ))}
+        {/* Q1: what do you sell */}
+        {!biz && !ask ? (
+          <>
+            <Txt th={th} v="h1">{c.s1Title}</Txt>
+            <Txt th={th} color={th.muted}>{c.s1Body}</Txt>
+            <View style={{ borderWidth: 1.5, borderColor: th.line, borderRadius: r.lg, backgroundColor: th.surface }}>
+              <TextInput
+                value={bizText}
+                onChangeText={(v) => { setBizText(v); setPreset(null); setBiz(null); setBizErr(null); setAsk(null); }}
+                placeholder={c.s1Placeholder}
+                placeholderTextColor={th.faint}
+                multiline
+                accessibilityLabel={c.s1Title}
+                style={{ minHeight: 104, padding: 16, paddingBottom: 48, fontFamily: font.body, fontSize: 16, lineHeight: 23, color: th.ink, textAlignVertical: "top", ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }}
+              />
+              <View style={{ position: "absolute", right: 10, bottom: 10 }}>
+                <MicButton th={th} lang={lang} onText={(t) => { setBizText(t); setPreset(null); }} />
+              </View>
             </View>
-          </View>
-        ) : null}
+            <View style={{ gap: 8 }}>
+              <Txt th={th} v="smallMed" color={th.muted}>{c.examples}</Txt>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {Object.entries(PRESETS).map(([k, p]) => (
+                  <Chip key={k} th={th} label={p.label} on={preset === k} onPress={() => { setPreset(k); setBizText(p[lang]); setBiz(null); setBizErr(null); }} />
+                ))}
+              </View>
+            </View>
+          </>
+        ) : (
+          <Answered th={th} label={c.s1Title} value={bizText} onEdit={() => { setBiz(null); setAsk(null); setSite(null); setSiteMode(null); }} editLabel={c.edit} />
+        )}
         {bizBusy ? <Thinking th={th} label={c.s1Busy} /> : null}
         {bizErr ? <Notice th={th} tone="warn" title={bizErr} /> : null}
-        {ask && !biz && !bizBusy ? (
-          <Reveal>
-            <Panel th={th} tint>
-              <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-                <Icon name="help-circle" size={18} color={th.brand} />
-                <Txt th={th} v="smallMed" color={th.brand}>{c.askTitle}</Txt>
-              </View>
-              <Txt th={th} v="h3">{ask.question}</Txt>
-              <View style={{ borderWidth: 1.5, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface }}>
-                <TextInput
-                  value={ask.answer}
-                  onChangeText={(v) => setAsk({ ...ask, answer: v })}
-                  placeholder={c.askPlaceholder}
-                  placeholderTextColor={th.faint}
-                  accessibilityLabel={ask.question}
-                  style={{ minHeight: 48, padding: 12, fontFamily: font.body, fontSize: 16, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }}
-                />
-              </View>
-              <Txt th={th} v="small" color={th.muted}>{c.askWhy}</Txt>
-            </Panel>
-          </Reveal>
-        ) : null}
+        {askBlock}
+
+        {/* Result card */}
         {biz ? (
           <Reveal>
             <Panel th={th}>
@@ -366,15 +379,26 @@ function Root() {
                 <Txt th={th}>{c.stopBody}</Txt>
                 <Text style={{ fontFamily: font.display, fontSize: 22, color: th.neg, marginTop: 4 }}>{inr(FEE_TOTAL)} {c.saved}</Text>
               </Notice>
-            ) : (
-              <>
-                {st === "needs_review" ? <Notice th={th} tone="warn" title={c.needs_review}><Txt th={th}>{c.reviewNote}</Txt></Notice> : null}
-                <Panel th={th} tint>
-                  <Txt th={th} v="h3">{c.youNeed}</Txt>
-                  {biz.docs.map((d, i) => <IconRow key={i} th={th} icon={i === 0 ? "credit-card" : i === 1 ? "user" : i === 2 ? "briefcase" : "file-text"}><Txt th={th}>{d}</Txt></IconRow>)}
-                  <IconRow th={th} icon="link" tone="ok"><Txt th={th}>{biz.website ? c.routeSite : c.routeLinks}</Txt></IconRow>
-                  {(biz.ai.flags || []).filter((f) => f.severity === "warn").map((f, i) => <IconRow key={`f${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th}>{f.text}</Txt></IconRow>)}
-                </Panel>
+            ) : null}
+            {st === "needs_review" ? <Notice th={th} tone="warn" title={c.needs_review}><Txt th={th}>{c.reviewNote}</Txt></Notice> : null}
+          </Reveal>
+        ) : null}
+
+        {/* Q2: where will customers pay */}
+        {biz && st !== "not_supported" ? (
+          siteMode === null ? (
+            <Reveal>
+              <Txt th={th} v="h2">{c.q2Title}</Txt>
+              <View style={{ gap: 8 }}>
+                <ChoiceRow th={th} icon="message-circle" label={c.q2Social} sub={c.q2SocialSub} onPress={() => { setSiteMode("social"); addLog({ kind: "rule", title: "Channel: social or messaging", json: { route: "payment_links", website_review: false } }); }} />
+                <ChoiceRow th={th} icon="globe" label={c.q2Site} sub={c.q2SiteSub} onPress={() => setSiteMode("site")} />
+              </View>
+            </Reveal>
+          ) : siteMode === "social" ? (
+            <Answered th={th} label={c.q2Title} value={c.q2Social} onEdit={() => { setSiteMode(null); setSite(null); }} editLabel={c.edit} />
+          ) : (
+            <Reveal>
+              {site ? <Answered th={th} label={c.q2Title} value={site.finalUrl || siteUrl} onEdit={() => { setSite(null); }} editLabel={c.edit} /> : (
                 <Panel th={th}>
                   <Txt th={th} v="h3">{c.siteTitle}</Txt>
                   <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
@@ -384,33 +408,46 @@ function Root() {
                     </View>
                     <Button th={th} kind="secondary" compact label={c.siteCta} onPress={runSite} busy={siteBusy} disabled={!siteUrl.trim() || siteBusy} />
                   </View>
+                  <Pressable onPress={() => setSiteMode(null)} accessibilityRole="button"><Txt th={th} v="smallMed" color={th.brand}>{c.q2Back}</Txt></Pressable>
                   {siteBusy ? <Thinking th={th} label={c.siteBusy} /> : null}
-                  {site ? (
-                    <Reveal>
-                      {site.kind === "social" ? <Notice th={th} tone="ok" title={c.siteSocial} /> : !site.ok ? <Notice th={th} tone="bad" title={c.siteDown}>{site.notes.map((n, i) => <Txt key={i} th={th} v="small">{n}</Txt>)}</Notice> : (
-                        <>
-                          <Status th={th} tone={site.missing.length ? "bad" : "ok"} label={site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk} />
-                          {Object.entries(site.pages).map(([k, p]) => (
-                            <IconRow key={k} th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
-                              <Txt th={th}>{p.label}{p.found && p.linkText ? <Txt th={th} v="small" color={th.muted}>  · {p.linkText}</Txt> : null}</Txt>
-                            </IconRow>
-                          ))}
-                          {site.notes.map((n, i) => <IconRow key={`n${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}
-                        </>
-                      )}
-                    </Reveal>
-                  ) : null}
                 </Panel>
-              </>
-            )}
+              )}
+              {site ? (
+                <Panel th={th}>
+                  {site.kind === "social" ? <Notice th={th} tone="ok" title={c.siteSocial} /> : !site.ok ? <Notice th={th} tone="bad" title={c.siteDown}>{site.notes.map((n, i) => <Txt key={i} th={th} v="small">{n}</Txt>)}</Notice> : (
+                    <>
+                      <Status th={th} tone={site.missing.length ? "bad" : "ok"} label={site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk} />
+                      {Object.entries(site.pages).map(([k, p]) => (
+                        <IconRow key={k} th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
+                          <Txt th={th}>{p.label}{p.found && p.linkText ? <Txt th={th} v="small" color={th.muted}>  · {p.linkText}</Txt> : null}</Txt>
+                        </IconRow>
+                      ))}
+                      {site.notes.map((n, i) => <IconRow key={`n${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}
+                    </>
+                  )}
+                </Panel>
+              ) : null}
+            </Reveal>
+          )
+        ) : null}
+
+        {/* What you'll need, once both questions are answered */}
+        {biz && st !== "not_supported" && siteDone ? (
+          <Reveal>
+            <Panel th={th} tint>
+              <Txt th={th} v="h3">{c.youNeed}</Txt>
+              {biz.docs.map((d, i) => <IconRow key={i} th={th} icon={i === 0 ? "credit-card" : i === 1 ? "user" : i === 2 ? "briefcase" : "file-text"}><Txt th={th}>{d}</Txt></IconRow>)}
+              <IconRow th={th} icon="link" tone="ok"><Txt th={th}>{siteMode === "site" ? c.routeSite : c.routeLinks}</Txt></IconRow>
+              {(biz.ai.flags || []).filter((f) => f.severity === "warn").map((f, i) => <IconRow key={`f${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th}>{f.text}</Txt></IconRow>)}
+            </Panel>
           </Reveal>
         ) : null}
       </>
     );
     footer = biz
       ? st === "not_supported"
-        ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setPreset(null); }} />
-        : <Button th={th} label={c.s1Next} onPress={() => go(2)} />
+        ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setPreset(null); setSiteMode(null); setSite(null); }} />
+        : <Button th={th} label={c.s1Next} onPress={() => go(2)} disabled={!siteDone} />
       : ask
         ? <Button th={th} label={c.askCta} onPress={() => runClassify(ask)} busy={bizBusy} disabled={!ask.answer.trim()} />
         : <Button th={th} label={c.s1Cta} onPress={() => runClassify()} busy={bizBusy} disabled={!bizText.trim()} />;
@@ -478,7 +515,7 @@ function Root() {
     const byDoc = Object.fromEntries((names?.ai.documents || []).map((d) => [d.doc, d.name]));
     const legal = byDoc.PAN || "";
     const verdicts = Object.fromEntries((names?.ai.comparisons || []).map((x) => [x.doc, x]));
-    const bankFail = verdicts.Bank?.verdict === "likely_fail";
+    const bankFail = Boolean(verdicts.Bank) && verdicts.Bank.verdict !== "match";
     screen = (
       <>
         <Txt th={th} v="h1">{c.s3Title}</Txt>
@@ -505,7 +542,7 @@ function Root() {
                 <View key={d} style={{ gap: 8 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     <Txt th={th} v="smallMed" color={th.muted} style={{ flex: 1 }}>{d === "Bank" ? c.bankName : c.aadhaarName}</Txt>
-                    <Status th={th} tone={verdicts[d].verdict === "match" ? "ok" : verdicts[d].verdict === "likely_fail" ? "bad" : "warn"} label={c[verdicts[d].verdict]} />
+                    <Status th={th} tone={verdicts[d].verdict === "match" ? "ok" : verdicts[d].verdict === "likely_fail" || d === "Bank" ? "bad" : "warn"} label={d === "Bank" && verdicts[d].verdict === "unclear" ? c.bankPartial : c[verdicts[d].verdict]} />
                   </View>
                   <NameLine th={th} c={c} tokens={compareNames(legal, byDoc[d] || "")} />
                   <Txt th={th} v="small" color={th.muted}>{verdicts[d].reason}</Txt>
@@ -689,6 +726,49 @@ function Root() {
 }
 
 /* ---------------- Pieces ---------------- */
+
+/** A question already answered: compact row, tap to change. */
+function Answered({ th, label, value, onEdit, editLabel }: { th: Theme; label: string; value: string; onEdit: () => void; editLabel: string }) {
+  return (
+    <Pressable onPress={onEdit} accessibilityRole="button" accessibilityLabel={`${label}: ${value}. ${editLabel}`}
+      style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: r.md, backgroundColor: th.sunken, borderWidth: 1, borderColor: th.line }}>
+      <Icon name="check" size={16} color={th.pos} />
+      <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+        <Txt th={th} v="tiny" color={th.muted}>{label}</Txt>
+        <Txt th={th} v="smallMed" numberOfLines={2}>{value}</Txt>
+      </View>
+      <Txt th={th} v="smallMed" color={th.brand}>{editLabel}</Txt>
+    </Pressable>
+  );
+}
+
+function ChoiceRow({ th, icon, label, sub, onPress }: { th: Theme; icon: any; label: string; sub?: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: r.lg, borderWidth: 1.5, borderColor: pressed ? th.brand : th.line, backgroundColor: th.surface })}>
+      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: th.brandTint, alignItems: "center", justifyContent: "center" }}><Icon name={icon} size={18} color={th.brand} /></View>
+      <View style={{ flex: 1, gap: 1 }}><Txt th={th} v="bodyMed">{label}</Txt>{sub ? <Txt th={th} v="small" color={th.muted}>{sub}</Txt> : null}</View>
+      <Icon name="chevron-right" size={18} color={th.muted} />
+    </Pressable>
+  );
+}
+
+/** Mic: browser speech recognition on web (en-IN / hi-IN). Hidden where unsupported. */
+function MicButton({ th, lang, onText }: { th: Theme; lang: Lang; onText: (t: string) => void }) {
+  const [on, setOn] = useState(false);
+  const stopRef = useRef<null | (() => void)>(null);
+  if (!browserSpeechAvailable()) return null;
+  const toggle = () => {
+    if (on) { stopRef.current?.(); stopRef.current = null; setOn(false); return; }
+    setOn(true);
+    stopRef.current = startBrowserSpeech(lang, (t) => onText(t), () => { setOn(false); stopRef.current = null; });
+  };
+  return (
+    <Pressable onPress={toggle} accessibilityRole="button" accessibilityLabel={on ? "Stop listening" : "Speak instead of typing"}
+      style={{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: on ? th.neg : th.brandTint, borderWidth: on ? 0 : 1, borderColor: th.line }}>
+      <Icon name={on ? "square" : "mic"} size={18} color={on ? "#fff" : th.brand} />
+    </Pressable>
+  );
+}
 
 function PassPreview({ th, labels }: { th: Theme; labels: string[] }) {
   return (
