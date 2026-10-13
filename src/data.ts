@@ -44,11 +44,6 @@ export const PRESETS: Record<string, { label: string; en: string; hi: string }> 
     en: "I do online astrology and kundli readings on video call. Clients pay in advance.",
     hi: "Main online astrology aur kundli reading karta hoon video call pe. Clients advance mein pay karte hain.",
   },
-  vape: {
-    label: "Vape refills",
-    en: "I sell vape pods and e-cigarette refills on Instagram with home delivery.",
-    hi: "Main Instagram pe vape pods aur e-cigarette refills bechta hoon, home delivery ke saath.",
-  },
 };
 
 type Loc<T> = { en: T; hi: T };
@@ -78,12 +73,6 @@ export const REC_CLASSIFY: Record<string, Omit<ClassifyAI, "flags" | "explanatio
       flags: [{ severity: "warn", text: "Expect a reviewer to ask how you deliver the service and handle refunds." }] },
     hi: { explanation: "Astrology services ka manual review hota hai, aur kabhi kabhi decline hota hai. Fee dene se pehle aapko yeh pata rahega.",
       flags: [{ severity: "warn", text: "Reviewer pooch sakte hain ki aap service kaise dete hain aur refund kaise karte hain." }] },
-  },
-  vape: {
-    policy_id: "tobacco_ecig", category_label: "Tobacco, e-cigarettes & vapes", sub_category: "E-cigarette and vape refills",
-    confidence: 0.97, is_reseller: true, has_gst: null, has_website: false, channels: ["Instagram"],
-    en: { explanation: "E-cigarettes and vape products can't be accepted. Their sale is banned in India, so this application would be rejected.", flags: [] },
-    hi: { explanation: "E-cigarettes aur vape products accept nahi ho sakte. India mein inki bikri banned hai, isliye yeh application reject hoti.", flags: [] },
   },
 };
 export const recordedClassify = (key: string, lang: Lang): ClassifyAI => {
@@ -235,7 +224,7 @@ const en = {
     ["zap", "Account live", "Start with a Payment Link"],
   ] as [string, string, string][],
   restart: "Run the demo again",
-  errNoAI: "Couldn't reach the AI right now. Pick one of the examples to continue.",
+  errNoAI: "Couldn't check this description right now. Try again in a moment, or pick an example.",
   errPhotos: "Couldn't read these photos. Try clearer photos, or switch back to the samples.",
   howItWorks: "How it works",
 };
@@ -350,7 +339,7 @@ const hi: Copy = {
     ["zap", "Account live", "Payment Link se shuru karein"],
   ],
   restart: "Demo phir se chalayein",
-  errNoAI: "Abhi AI tak nahi pahunch paaye. Aage badhne ke liye ek udaharan chuniye.",
+  errNoAI: "Abhi yeh description check nahi ho paaya. Thodi der mein phir try karein, ya ek udaharan chuniye.",
   errPhotos: "Yeh photos padhi nahi ja saki. Saaf photo try karein, ya samples pe wapas jaayein.",
   howItWorks: "Kaise kaam karta hai",
 };

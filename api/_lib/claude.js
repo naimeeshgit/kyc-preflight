@@ -30,7 +30,7 @@ SELLER DESCRIPTION:
 
 Write "explanation" (2 short sentences) and every "flags" text in ${langName(lang)}. Use plain words a first-time seller understands. Do not use jargon like MCC, CKYC or KYB. Flags are optional practical tips (at most 2).
 
-Reply with only JSON in this shape, no other text:
+Answer by calling the report_category tool. Shape for reference:
 {"policy_id":"...","category_label":"...","sub_category":"...","confidence":0.0,"is_reseller":false,"has_gst":null,"has_website":null,"channels":["..."],"flags":[{"severity":"info","text":"..."}],"explanation":"..."}`;
 }
 
@@ -46,7 +46,7 @@ For anything that is not "match", give one concrete fix the seller can do. Never
 
 Write reason, fix and summary in ${langName(lang)}, one short sentence each, plain words.
 
-Reply with only JSON in this shape, no other text:
+Answer by calling the report_names tool. Shape for reference:
 {"documents":[{"doc":"PAN","name":"...","readable":true},{"doc":"Aadhaar","name":"...","readable":true},{"doc":"Bank","name":"...","readable":true}],"comparisons":[{"doc":"Aadhaar","verdict":"match","reason":"...","fix":null},{"doc":"Bank","verdict":"likely_fail","reason":"...","fix":"..."}],"summary":"..."}`;
 }
 
@@ -60,9 +60,50 @@ function parseJson(text) {
   return null;
 }
 
-async function callClaude(content, { maxTokens = 900 } = {}) {
+// Structured output: the model must answer by calling one tool whose input schema is the shape we need,
+// so the server always gets valid JSON instead of hoping free text parses.
+const SCHEMAS = {
+  classify: {
+    name: "report_category",
+    description: "Report the category decision for the seller's description.",
+    input_schema: {
+      type: "object",
+      properties: {
+        policy_id: { type: "string", enum: POLICY.map((p) => p.id) },
+        category_label: { type: "string" },
+        sub_category: { type: "string" },
+        confidence: { type: "number", minimum: 0, maximum: 1 },
+        is_reseller: { type: ["boolean", "null"] },
+        has_gst: { type: ["boolean", "null"] },
+        has_website: { type: ["boolean", "null"] },
+        channels: { type: "array", items: { type: "string" } },
+        flags: { type: "array", maxItems: 2, items: { type: "object", properties: { severity: { type: "string", enum: ["info", "warn"] }, text: { type: "string" } }, required: ["severity", "text"] } },
+        explanation: { type: "string" },
+      },
+      required: ["policy_id", "category_label", "confidence", "explanation"],
+    },
+  },
+  names: {
+    name: "report_names",
+    description: "Report the names read from the documents and how each compares with the PAN name.",
+    input_schema: {
+      type: "object",
+      properties: {
+        documents: { type: "array", items: { type: "object", properties: { doc: { type: "string", enum: ["PAN", "Aadhaar", "Bank"] }, name: { type: "string" }, readable: { type: "boolean" } }, required: ["doc", "name", "readable"] } },
+        comparisons: { type: "array", items: { type: "object", properties: { doc: { type: "string", enum: ["Aadhaar", "Bank"] }, verdict: { type: "string", enum: ["match", "likely_fail", "unclear"] }, reason: { type: "string" }, fix: { type: ["string", "null"] } }, required: ["doc", "verdict", "reason"] } },
+        summary: { type: "string" },
+      },
+      required: ["documents", "comparisons", "summary"],
+    },
+  },
+};
+
+async function callClaude(content, { maxTokens = 1024, schema } = {}) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { const e = new Error("ANTHROPIC_API_KEY is not set"); e.status = 503; throw e; }
+  const tool = schema ? SCHEMAS[schema] : null;
+  const body = { model: MODEL, max_tokens: maxTokens, messages: [{ role: "user", content }] };
+  if (tool) { body.tools = [tool]; body.tool_choice = { type: "tool", name: tool.name }; }
   const res = await fetch(API_URL, {
     method: "POST",
     headers: {
@@ -70,16 +111,20 @@ async function callClaude(content, { maxTokens = 900 } = {}) {
       // Keys not scoped to a workspace need the workspace id (Console → Workspaces).
       ...(process.env.ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID } : {}),
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, messages: [{ role: "user", content }] }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    const e = new Error(`Anthropic API ${res.status}: ${body.slice(0, 300)}`); e.status = 502; throw e;
+    const text = await res.text().catch(() => "");
+    const e = new Error(`Anthropic API ${res.status}: ${text.slice(0, 300)}`); e.status = 502; throw e;
   }
   const data = await res.json();
-  const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
-  const json = parseJson(text);
-  if (!json) { const e = new Error("Model reply was not JSON"); e.status = 502; throw e; }
+  const toolUse = (data.content || []).find((b) => b.type === "tool_use");
+  let json = toolUse && toolUse.input && typeof toolUse.input === "object" ? toolUse.input : null;
+  if (!json) {
+    const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+    json = parseJson(text);
+    if (!json) { const e = new Error(`Model reply was not JSON (stop_reason ${data.stop_reason}): ${text.slice(0, 160)}`); e.status = 502; throw e; }
+  }
   return { json, model: data.model || MODEL, usage: data.usage };
 }
 

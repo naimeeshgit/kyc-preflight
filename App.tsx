@@ -83,8 +83,9 @@ function Root() {
   const [brand, setBrand] = useState("Gulmohar Jewels");
   const [brandDraft, setBrandDraft] = useState("Gulmohar Jewels");
 
-  const live = mode === "live" && !!srv?.liveAI;
-  useEffect(() => { health().then((h) => { setSrv(h); if (!h?.liveAI) setMode("rec"); }); }, []);
+  // Try live AI unless the server says it has no key; a slow health check shouldn't silently force recorded mode.
+  const live = mode === "live" && srv?.liveAI !== false;
+  useEffect(() => { health().then((h) => { setSrv(h); if (h && !h.liveAI) setMode("rec"); }); }, []);
 
   const addLog = useCallback((e: Omit<LogItem, "id" | "at">) => {
     const at = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });

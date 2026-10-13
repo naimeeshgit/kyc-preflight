@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   try {
     const { text, lang } = await readBody(req);
     if (!text || typeof text !== "string" || text.length > 2000) return res.status(400).json({ error: "text is required (max 2000 chars)" });
-    const { json, model } = await callClaude([{ type: "text", text: classifyPrompt(text, lang === "hi" ? "hi" : "en") }], { maxTokens: 700 });
+    const { json, model } = await callClaude([{ type: "text", text: classifyPrompt(text, lang === "hi" ? "hi" : "en") }], { maxTokens: 1024, schema: "classify" });
     // Never trust a policy_id the table doesn't contain.
     if (!POLICY.some((p) => p.id === json.policy_id)) json.policy_id = "other";
     return res.status(200).json({ ai: json, model, ms: Date.now() - started });

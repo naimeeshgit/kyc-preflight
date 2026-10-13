@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
       { type: "text", text: "Image 3: bank proof" }, toImageBlock(docs.bank),
       { type: "text", text: namesPrompt(lang === "hi" ? "hi" : "en") },
     ];
-    const { json, model } = await callClaude(content, { maxTokens: 800 });
+    const { json, model } = await callClaude(content, { maxTokens: 1024, schema: "names" });
     if (!Array.isArray(json.comparisons)) return res.status(502).json({ error: "Unexpected model output" });
     return res.status(200).json({ ai: json, model, ms: Date.now() - started });
   } catch (e) {
