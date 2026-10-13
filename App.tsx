@@ -636,7 +636,7 @@ function Root() {
     );
     footer = biz
       ? st === "not_supported"
-        ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setPreset(null); setSiteMode(null); setSite(null); }} />
+        ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setAsk(null); setPreset(null); setSiteMode(null); setSite(null); }} />
         : <Button th={th} label={c.s1Next} onPress={() => go(2)} disabled={!siteDone || !entity || !haveDone} />
       : ask
         ? <Button th={th} label={c.askCta} onPress={() => runClassify(ask)} busy={bizBusy} disabled={!ask.answer.trim()} />
