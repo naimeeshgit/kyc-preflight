@@ -6,7 +6,7 @@ import { font, r, Theme } from "./theme";
 import { Icon, IconRow, Txt } from "./ui";
 
 type Turn = AssistMsg & { draft?: AssistReply["draft"]; checklist?: AssistReply["checklist"]; suggestions?: string[]; guard?: string; error?: boolean };
-export type AssistCopy = { useSuggested: string; edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
+export type AssistCopy = { typeHere: string; useSuggested: string; edit: string; doneEditing: string; typeHint: string; attach: string; attachedOk: string; remove: string; fillFirst: (n: number) => string; fillAsk: (n: number) => string; attachNote: string; title: string; sub: string; disclaimer: string; disclaimerChecklist: string; fix: string; checklistTitle: (done: number, total: number) => string; blanks: (n: number) => string; placeholder: string; busy: string; error: string; draftLabel: string; copy: string; copied: string; share: string; startersTitle: string };
 
 /**
  * The in-app assistant: a chat grounded in this seller's case. It explains requirements and drafts
@@ -23,6 +23,9 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
   const [busy, setBusy] = useState(false);
   const [copiedAt, setCopiedAt] = useState<number | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
+  const [filling, setFilling] = useState<number | null>(null);
+  const [typed, setTyped] = useState<Record<string, string>>({});
+  const fillBlank = (i: number, blank: string, value: string) => { if (!value.trim()) return; setTurns((cur) => cur.map((x, k) => (k === i && x.draft ? { ...x, draft: { ...x.draft, body: x.draft.body.split(blank).join(value.trim()) } } : x))); };
   const editBody = (i: number, body: string) => setTurns((cur) => cur.map((x, k) => (k === i && x.draft ? { ...x, draft: { ...x.draft, body } } : x)));
   const scroll = useRef<ScrollView>(null);
   const toEnd = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 80);
@@ -136,6 +139,36 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                           </Pressable>
                         ) : null}
                       </View>) : null; })()}
+                    {filling === i ? (() => {
+                      const blanks = Array.from(new Set(m.draft!.body.match(/\[[^\]]+\]/g) || []));
+                      return blanks.length ? (
+                        <View style={{ marginHorizontal: 12, marginBottom: 10, padding: 10, gap: 10, borderRadius: r.md, borderWidth: 1.5, borderColor: th.brand, backgroundColor: th.brandTint }}>
+                          {blanks.map((b) => {
+                            const label = b.slice(1, -1); const opts = blankOptions(label);
+                            return (
+                              <View key={b} style={{ gap: 6 }}>
+                                <Txt th={th} v="smallMed">{label.replace(/^e\.g\.,?\s*/i, "")}</Txt>
+                                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                                  {opts.map((o) => (
+                                    <Pressable key={o} onPress={() => fillBlank(i, b, o)} accessibilityRole="button" style={{ borderWidth: 1.5, borderColor: th.brand, backgroundColor: th.surface, borderRadius: r.pill, paddingVertical: 6, paddingHorizontal: 12 }}>
+                                      <Text style={{ fontFamily: font.bodySemi, fontSize: 13, color: th.brand }}>{o}</Text>
+                                    </Pressable>
+                                  ))}
+                                  <View style={{ flexDirection: "row", flex: 1, minWidth: 140, borderWidth: 1, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface }}>
+                                    <TextInput value={typed[b] || ""} onChangeText={(v) => setTyped((x) => ({ ...x, [b]: v }))} placeholder={t.typeHere} placeholderTextColor={th.faint}
+                                      onSubmitEditing={() => fillBlank(i, b, typed[b] || "")} accessibilityLabel={label}
+                                      style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 7, fontFamily: font.body, fontSize: 13.5, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }} />
+                                    <Pressable onPress={() => fillBlank(i, b, typed[b] || "")} accessibilityRole="button" style={{ paddingHorizontal: 10, justifyContent: "center" }}>
+                                      <Icon name="check" size={16} color={th.brand} />
+                                    </Pressable>
+                                  </View>
+                                </View>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      ) : null;
+                    })() : null}
                     <Txt th={th} v="tiny" color={th.faint} style={{ paddingHorizontal: 12, paddingBottom: 10 }}>{t.disclaimer}</Txt>
                     {(() => {
                       const d = m.draft!; const n = (d.body.match(/\[[^\]]+\]/g) || []).length; const isOn = attachedTitles.includes(d.title);
@@ -152,7 +185,7 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                               <Txt th={th} v="tiny" color={th.muted}>· {t.remove}</Txt>
                             </Pressable>
                           ) : n ? (
-                            <Pressable onPress={() => send(t.fillAsk(n))} disabled={busy} accessibilityRole="button" style={{ flex: 1.4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 11, backgroundColor: th.warnTint }}>
+                            <Pressable onPress={() => setFilling(filling === i ? null : i)} accessibilityRole="button" style={{ flex: 1.4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 11, backgroundColor: th.warnTint }}>
                               <Icon name="edit-3" size={15} color={th.warn} />
                               <Txt th={th} v="smallMed" color={th.warn}>{t.fillFirst(n)}</Txt>
                             </Pressable>
@@ -211,4 +244,17 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
       </Pressable>
     </Modal>
   );
+}
+
+/** Tap options for a blank, from its wording. Rules only: no model involved in filling blanks. */
+function blankOptions(label: string): string[] {
+  const l = label.toLowerCase();
+  if (l.includes("/")) return label.split("/").map((x) => x.replace(/^(e\.g\.,?\s*)/i, "").trim()).filter((x) => x && x.length < 40);
+  if (/hour/.test(l)) return ["24 hours", "48 hours"];
+  if (/working day|refund|process/.test(l)) return ["5-7 working days", "7-10 working days"];
+  if (/day|window|cancel|return/.test(l)) return ["3 days", "7 days", "15 days"];
+  if (/minute|session|length/.test(l)) return ["30 minutes", "45 minutes", "60 minutes"];
+  if (/price|₹|rs|amount/.test(l)) return ["₹500-1,000", "₹1,000-2,000"];
+  if (/number/.test(l)) return ["3", "7", "15"];
+  return [];
 }

@@ -97,6 +97,7 @@ Rules:
 - When you give a draft, the message is one or two plain sentences; never repeat an earlier question in it.
 - Contact details: write her registered mobile from the case into the draft itself (never a [bracket] for it); never ask for email, address or account numbers, leave those as [brackets].
 - Bank name letter: addressed to her branch, quotes her PAN name and the account name exactly as in the case, asks to update the account holder name to match the PAN, lists PAN copy as enclosure.
+- Never write instructions to the seller inside the draft body (no "this draft has blanks"); the body is only the document.
 - Drafts (policy pages, letters, product or business descriptions, reviewer answers, a declaration of business): put them in "draft". Labelled as a draft, plain text, [brackets] for anything unknown (address, GSTIN, account number, dates). Never invent registration or licence numbers, legal citations or facts she hasn't given.
 - How-to answers (Udyam, FSSAI, bank name change, video KYC prep): short numbered steps with where to go and roughly how long it takes. When the document plan gives a "how" for an item, use its timing and facts exactly; don't contradict the app. Don't quote button labels or screen wording of government portals; describe the step instead ("register with your Aadhaar and verify the OTP"). Government portals: udyamregistration.gov.in, foscos.fssai.gov.in, gst.gov.in. No legal or tax advice beyond that; suggest a CA when it truly depends.
 - Language: ${lang === "hi" ? "reply in simple Hinglish (Hindi in Latin script). Drafts meant for reviewers or customers stay in simple English." : "simple English."}
@@ -144,7 +145,8 @@ module.exports = async (req, res) => {
       suggestions = suggestions.filter((x) => !/just draft|bas draft|skip/i.test(x));
       // Blanks left in a draft get a one-tap way to fill them, question by question.
       const blanks = (draft.body.match(/\[[^\]]+\]/g) || []).length;
-      if (blanks >= 2) suggestions = [lang === "hi" ? `${blanks} khaali jagah saath mein bhariye` : `Fill the ${blanks} blanks with me`, ...suggestions].slice(0, 3);
+      // Blanks are filled in the draft card itself (rules, no model); no chat chip needed.
+      suggestions = suggestions.filter((x) => !/fill the .*blank|khaali jagah/i.test(x));
     }
     const checklist = Array.isArray(json.checklist) && json.checklist.length ? json.checklist.slice(0, 14).map((x) => ({ item: clip(x.item, 120), done: Boolean(x.done), action: x.done ? null : clip(x.action, 200) || null })) : null;
     // A question before a draft always offers the way out.
