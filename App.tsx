@@ -13,6 +13,7 @@ import { font, r, Theme, useTheme } from "./src/theme";
 import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
 import { compareNames, scoreNames, Token } from "./src/names";
+import { Scorecard } from "./src/Scorecard";
 import { GoLivePass, PassRow } from "./src/Pass";
 import { Button, Chip, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
 
@@ -599,7 +600,7 @@ function Root() {
         <Button th={th} label={c.save} disabled={!brandDraft.trim()} onPress={() => { setBrand(brandDraft.trim()); setBrandOpen(false); }} />
       </Sheet>
       <Sheet th={th} wide={wide} visible={howOpen} onClose={() => setHowOpen(false)} title={c.howItWorks}>
-        <HowItWorks th={th} step={step} log={log} srv={srv} mode={mode} setMode={setMode} />
+        <HowItWorks th={th} step={step} log={log} srv={srv} mode={mode} setMode={setMode} live={live} />
       </Sheet>
     </>
   );
@@ -615,7 +616,7 @@ function Root() {
               <Txt th={th} color={th.muted}>New sellers pay ₹199 for KYC and often learn only afterwards that their category, KYC route or bank name won't pass. Pre-flight runs those checks first, in about 90 seconds, inside the merchant app.</Txt>
               <View style={{ gap: 10 }}>
                 <Legend th={th} kind="ai" text="AI reads the business description and document photos" />
-                <Legend th={th} kind="rule" text="Rules decide eligibility, fees and the pay gate" />
+                <Legend th={th} kind="rule" text={`Rules decide: a ${TAX.rows}-row policy taxonomy, a scored name-match engine, fees and the pay gate`} />
                 <Legend th={th} kind="mock" text="Registry, penny drop and payment are mocked" />
               </View>
               <Button th={th} kind="secondary" compact icon="cpu" label="See how it works" onPress={() => setHowOpen(true)} />
@@ -753,7 +754,7 @@ const PARTS: Record<number, [LogKind, string, string][]> = {
   5: [["mock", "Submission", "Simulated. No payment or application is created."]],
 };
 
-function HowItWorks({ th, step, log, srv, mode, setMode }: { th: Theme; step: number; log: LogItem[]; srv: Health | null | undefined; mode: "live" | "rec"; setMode: (m: "live" | "rec") => void }) {
+function HowItWorks({ th, step, log, srv, mode, setMode, live }: { th: Theme; step: number; log: LogItem[]; srv: Health | null | undefined; mode: "live" | "rec"; setMode: (m: "live" | "rec") => void; live: boolean }) {
   const status = srv === undefined ? "Checking the AI server…" : srv?.liveAI ? `Live AI is on (${srv.model}). The app calls a small server that holds the API key.` : "Live AI isn't configured here, so the app uses answers recorded from the same prompts.";
   return (
     <>
@@ -778,6 +779,9 @@ function HowItWorks({ th, step, log, srv, mode, setMode }: { th: Theme; step: nu
       <Txt th={th} v="h3">Call log</Txt>
       {log.length === 0 ? <Txt th={th} v="small" color={th.muted}>Every AI answer, rule decision and mocked lookup appears here as you go.</Txt> : null}
       {log.map((e, i) => <LogRow key={e.id} th={th} e={e} open={i === 0} />)}
+      <Txt th={th} v="h3">Under the hood</Txt>
+      <Txt th={th} v="small" color={th.muted}>Category: the description is matched against Razorpay's published onboarding taxonomy ({TAX.rows} sub-categories in {TAX.categories} categories; {TAX.not_supported} blocked, {TAX.needs_review} reviewed by a human). A lexical retriever picks the top 8 rows, the model chooses only among those, and a fixed decision policy turns confidence into decided / ask one question / reviewer decides. Names: the model reads the documents; a deterministic engine (honorifics, abbreviations, Devanagari and Telugu transliteration, Indian phonetic keys, word alignment) scores the match and sets the verdict. The model never decides eligibility.</Txt>
+      <Scorecard th={th} live={live} />
       <Txt th={th} v="h3">How we'd measure it</Txt>
       <Txt th={th} v="small" color={th.muted}>North star: first-time-right activation, the share of paid KYC applications activated on the first submission. Guardrails: fraud and chargeback rate of activated merchants stays flat against a holdout; onboarding tickets and paid-then-rejected applications fall.</Txt>
       <Txt th={th} v="h3">Deliberately not built</Txt>

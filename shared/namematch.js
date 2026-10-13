@@ -80,7 +80,8 @@ function lev(a, b) {
 
 // ---- Alignment and scoring ----------------------------------------------------------------
 const W = { exact: 1, phonetic: 0.9, fuzzy: 0.8, initial: 0.6, missing: 0 };
-const EXTRA_PENALTY = 0.08, EXTRA_CAP = 0.25;
+const W_FIRST_INITIAL = 0.45;                 // "P LAKSHMI REDDY": an initial for the given name proves less than one for a middle name
+const EXTRA_WORD = 0.16, EXTRA_INITIAL = 0.03, EXTRA_CAP = 0.3;   // an extra name word may mean a different person; extra initials are cheap
 /** Thresholds (documented in the build log; tuned on eval/names.json). */
 const T = { match: 0.85, review: 0.6 };
 
@@ -114,9 +115,9 @@ function compare(legal, other) {
   const missing = base.filter((_, bi) => !pairs.some((p) => p.bi === bi));
   const extra = pool.filter((_, i) => used[i] === null);
   const firm = extra.some((w) => FIRM.has(w));
-  let score = base.length ? pairs.reduce((s, p) => s + W[p.kind], 0) / base.length : 0;
-  // Extra initials (A P J) are cheap; extra names are not.
-  score -= Math.min(EXTRA_CAP, extra.reduce((s, w) => s + (w.length === 1 ? EXTRA_PENALTY / 3 : EXTRA_PENALTY), 0));
+  const weight = (p) => (p.kind === "initial" && p.bi === 0 && base.length > 1 ? W_FIRST_INITIAL : W[p.kind]);
+  let score = base.length ? pairs.reduce((s, p) => s + weight(p), 0) / base.length : 0;
+  score -= Math.min(EXTRA_CAP, extra.reduce((s, w) => s + (w.length === 1 ? EXTRA_INITIAL : EXTRA_WORD), 0));
   score = Math.max(0, Math.round(score * 100) / 100);
   let verdict = score >= T.match ? "match" : score >= T.review ? "review" : "fail";
   let note = null;
