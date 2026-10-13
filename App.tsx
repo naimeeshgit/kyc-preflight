@@ -1125,11 +1125,11 @@ function PassPreview({ th, labels }: { th: Theme; labels: string[] }) {
       </View>
       <View style={{ flexDirection: "row", backgroundColor: th.surface }}>
         {labels.map((l, i) => (
-          <View key={l} style={{ flex: 1, alignItems: "center", gap: 8, paddingVertical: 16, borderLeftWidth: i ? 1 : 0, borderLeftColor: th.line }}>
-            <View style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderStyle: "dashed", borderColor: th.faint, alignItems: "center", justifyContent: "center" }}>
+          <View key={l} style={{ flex: 1, alignItems: "center", gap: 6, paddingVertical: 14, paddingHorizontal: 2, borderLeftWidth: i ? 1 : 0, borderLeftColor: th.line }}>
+            <View style={{ width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderStyle: "dashed", borderColor: th.faint, alignItems: "center", justifyContent: "center" }}>
               <Text style={{ fontFamily: font.monoBold, fontSize: 14, color: th.faint }}>{i + 1}</Text>
             </View>
-            <Txt th={th} v="smallMed" color={th.muted}>{l}</Txt>
+            <Txt th={th} v="tiny" color={th.muted} style={{ textAlign: "center" }}>{l}</Txt>
           </View>
         ))}
       </View>

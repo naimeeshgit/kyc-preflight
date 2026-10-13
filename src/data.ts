@@ -172,7 +172,7 @@ const en = {
   hi: "Hi Priya",
   s0Title: "Check you'll be approved before you pay",
   s0Body: "Everything a reviewer will check, checked and fixed now, in about 2 minutes. The ₹199 KYC fee is charged only after it passes.",
-  s0Checks: ["Category", "KYC route", "Names"],
+  s0Checks: ["Category", "Docs", "KYC route", "Names", "Proof"],
   s0Why: [
     ["slash", "No fee if your category can't be accepted."],
     ["video", "Know now if you'll need a video call, and book it."],
@@ -362,7 +362,7 @@ const hi: Copy = {
   hi: "Namaste Priya",
   s0Title: "Pay karne se pehle jaan lijiye ki approval milega",
   s0Body: "Jo bhi reviewer check karega, woh abhi check aur theek, lagbhag 2 minute mein. ₹199 KYC fee tabhi lagegi jab sab pass ho.",
-  s0Checks: ["Category", "KYC route", "Naam"],
+  s0Checks: ["Category", "Docs", "KYC route", "Naam", "Proof"],
   s0Why: [
     ["slash", "Category accept nahi hogi toh koi fee nahi."],
     ["video", "Abhi pata chalega ki video call hoga ya nahi, aur book bhi kar lenge."],
