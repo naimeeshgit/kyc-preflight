@@ -85,7 +85,7 @@ export const PRESETS: Record<string, { label: string; en: string; hi: string; ta
     hi: "Main Instagram pe disposable vapes aur pod kits bechta hoon, poore Hyderabad mein delivery.",
   },
   spirits: {
-    tag: "Disguised blocked item", tone: "bad",
+    tag: "Hidden blocked item: no green", tone: "bad",
     label: "Diwali gift hampers",
     en: "Curated Diwali gift hampers with dry fruits and imported spirits, delivered to your door.",
     hi: "Diwali ke gift hampers, dry fruits aur imported spirits ke saath, ghar tak delivery.",

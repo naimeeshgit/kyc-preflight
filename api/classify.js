@@ -14,7 +14,7 @@ const STRONG_ALT = 0.6; // relative retrieval score that makes an alternative "s
 
 // Defence in depth: words that belong to blocked domains. If any appear and the chosen row is
 // "supported", a human decides. This never blocks anyone; it only stops a green stamp.
-const TRIPWIRE = /\b(spirits?|whisk(e)?y|vodka|rum|gin|beer|wine|liquor|alcohol|sharab|daru|tobacco|cigarettes?|cigars?|vape|vapour|e-?cig\w*|hookah|molasses|gutka|beedi|bet(ting|s)?|satta|casino|rummy|poker|teen patti|lottery|lucky draw|jackpot|crypto\w*|bitcoin|usdt|nft|token|airsoft|rifle|pistol|gun|knives|knife|ammunition|escort|adult|sex\w*|intimate|dropship\w*|drop-?ship\w*|downline|mlm|pyramid|guaranteed returns?|double your money|prediction market|real[- ]money|cash prizes?)\b/i;
+const TRIPWIRE = /\b(spirits?|whisk(e)?y|vodka|rum|gin|beer|wine|liquor|alcohol|sharab|daru|tobacco|cigarettes?|cigars?|vap(e|es|ing|our)|e-?cig\w*|hookah|molasses|gutka|beedi|bet(ting|s)?|satta|casino|rummy|poker|teen patti|lottery|lucky draw|jackpot|crypto\w*|bitcoin|usdt|nft|token|airsoft|rifle|pistol|gun|knives|knife|ammunition|escort|adult|sex\w*|intimate|dropship\w*|drop-?ship\w*|downline|mlm|pyramid|guaranteed returns?|double your money|prediction market|real[- ]money|cash prizes?)\b/i;
 
 function decide(ai, candidates, qa, text = "") {
   const chosen = POLICY.find((p) => p.id === ai.policy_id) || null;
@@ -23,6 +23,9 @@ function decide(ai, candidates, qa, text = "") {
   const conf = Number(ai.confidence) || 0;
   const alreadyAsked = Boolean(qa && qa.question);
 
+  // 0. Two independent signals agree on "blocked": blocked-domain words in the text, a blocked row chosen,
+  //    and no strong alternative with another status. No answer could change it, so don't ask.
+  if (chosen && chosen.status === "not_supported" && !mixed && TRIPWIRE.test(text)) return { state: "decided", status: chosen.status, policy: chosen, why: "blocked_terms_agree" };
   // 1. The model asked a question and we have not asked before: ask.
   if (ai.question && !alreadyAsked && conf < T_DECIDE) return { state: "ask", question: ai.question };
   // 2. Nothing fits, or confidence too low after any question: a human reviewer decides.
