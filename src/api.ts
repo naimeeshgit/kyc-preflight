@@ -62,3 +62,10 @@ export const checkSite = (url: string, sellsGoods: boolean) => post<SiteResult>(
 export type Draft = { title: string; body: string; notes: string[]; model?: string; ms: number; draft: true };
 export const draft = (payload: { kind: "policy" | "clarification"; lang: Lang; business: { description: string; category?: string; label?: string; status?: string; reason?: string }; page?: string; site?: string }) =>
   post<Draft>("/api/draft", payload, 60000);
+
+export type EvFacts = { readable?: boolean; business_name?: string | null; person_name?: string | null; products?: string[]; price_mode?: string; contact?: string | null; notes?: string | null };
+export type EvCell = { state: "ok" | "warn" | "bad" | "none"; value: string; why: string };
+export type EvGrid = { rows: { key: string; label: string; expected: string; cells: Record<string, EvCell> }[]; flags: { row: string; source: string; state: string; why: string }[]; verdict: "ok" | "warn" | "bad" };
+export type EvidenceResult = { sources: { id: string; label: string; kind: string; facts: EvFacts }[]; grid: EvGrid; model: string; ms: number };
+export const readEvidence = (payload: { lang: Lang; declared: { legalName: string; shopName: string; policyId: string; description: string }; items: ({ id: string; kind: string } & DocInput)[] }) =>
+  post<EvidenceResult>("/api/evidence", payload, 60000);

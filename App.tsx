@@ -10,9 +10,12 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } f
 import { TASAOrbiter_600SemiBold, TASAOrbiter_700Bold } from "@expo-google-fonts/tasa-orbiter";
 import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono";
 import { font, r, Theme, useTheme } from "./src/theme";
-import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, inr, policyById, recordedClassify } from "./src/data";
+import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, NAMES, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
-import { checkSite, draft as draftApi, Draft, SiteResult } from "./src/api";
+import { checkSite, draft as draftApi, Draft, EvidenceResult, readEvidence, SiteResult } from "./src/api";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const DOCPLAN = require("./shared/docplan") as { ENTITIES: Record<string, { label: string; hint: string }>; HAVE: Record<string, { label: string }>; plan: (i: { entity: string; have: string[]; extraDocs?: string[] }) => DocPlan };
+type DocPlan = { items: { key: string; label: string; status: "have" | "in_app" | "missing"; why?: string; how?: { what: string; time: string; how: string } }[]; ready: boolean; upgrade?: { title: string; body: string } };
 import { browserSpeechAvailable, startBrowserSpeech } from "./src/voice";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
@@ -29,6 +32,14 @@ const SPECIMEN_IMG = {
 };
 
 type DocKey = "pan" | "aadhaar" | "bank";
+type EvKey = "instagram" | "catalog" | "invoice";
+const EV_IMG = {
+  ig_priya: require("./assets/evidence/ig_priya.png"),
+  catalog_priya: require("./assets/evidence/catalog_priya.png"),
+  catalog_mismatch: require("./assets/evidence/catalog_mismatch.png"),
+  invoice_priya: require("./assets/evidence/invoice_priya.png"),
+};
+const HAVE_BY_ENTITY: Record<string, string[]> = { individual: ["udyam", "gst"], proprietorship: ["udyam", "gst", "shop", "current"], partnership: ["deed", "gst", "current"], company: ["coi", "gst", "current"] };
 type Photo = { uri: string; base64: string; mediaType: string };
 type LogKind = "ai" | "rec" | "rule" | "mock";
 type LogItem = { id: number; kind: LogKind; title: string; at: string; ms?: number; note?: string; json: unknown };
@@ -81,6 +92,14 @@ function Root() {
   const [site, setSite] = useState<SiteResult | null>(null);
   const [siteBusy, setSiteBusy] = useState(false);
   const [siteMode, setSiteMode] = useState<null | "social" | "site">(null);
+  const [entity, setEntity] = useState<string | null>(null);
+  const [have, setHave] = useState<string[]>([]);
+  const [haveDone, setHaveDone] = useState(false);
+  const [evPhotos, setEvPhotos] = useState<Partial<Record<EvKey, Photo>>>({});
+  const [evMismatch, setEvMismatch] = useState(false);
+  const [evidence, setEvidence] = useState<EvidenceResult | null>(null);
+  const [evBusy, setEvBusy] = useState(false);
+  const [caseOpen, setCaseOpen] = useState(false);
 
   const [pan, setPan] = useState("ABCPR0000X");
   const [panEdit, setPanEdit] = useState(false);
@@ -246,6 +265,41 @@ function Root() {
     } catch { setNamesErr(c.errPhotos); }
   }
 
+  async function pickEv(k: EvKey) {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
+      if (res.canceled || !res.assets?.[0]?.uri) return;
+      const a = res.assets[0];
+      const ctx = ImageManipulator.manipulate(a.uri);
+      if ((a.width || 0) > 1200) ctx.resize({ width: 1200 });
+      const out = await (await ctx.renderAsync()).saveAsync({ base64: true, compress: 0.6, format: SaveFormat.JPEG });
+      if (!out.base64) throw new Error("no data");
+      setEvPhotos((ph) => ({ ...ph, [k]: { uri: out.uri, base64: out.base64 as string, mediaType: "image/jpeg" } }));
+      setEvidence(null);
+    } catch { setNamesErr(c.errPhotos); }
+  }
+  const evSample = (k: EvKey) => (k === "instagram" ? "ig_priya" : k === "catalog" ? (evMismatch ? "catalog_mismatch" : "catalog_priya") : "invoice_priya") as keyof typeof EV_IMG;
+
+  async function runEvidence(legalName: string) {
+    if (!biz) return;
+    setEvBusy(true); setEvidence(null);
+    const items = (["instagram", "catalog", "invoice"] as EvKey[]).map((k) => ({ id: k, kind: k, ...(evPhotos[k] ? { base64: evPhotos[k]!.base64, mediaType: evPhotos[k]!.mediaType } : { sample: evSample(k) }) }));
+    try {
+      const res = await readEvidence({ lang, declared: { legalName, shopName: brand, policyId: biz.policy.id, description: bizText }, items });
+      setEvidence(res);
+      addLog({ kind: "ai", title: "Read business evidence (vision): facts only", ms: res.ms, note: res.model, json: res.sources });
+      addLog({ kind: "rule", title: `Cross-source consistency: ${res.grid.verdict}`, note: `${res.grid.rows.length} facts × ${res.sources.length} sources · ${res.grid.flags.length} flags`, json: res.grid });
+    } catch (e: any) {
+      addLog({ kind: "ai", title: "Evidence read failed", json: { error: e?.message } });
+    }
+    setEvBusy(false);
+  }
+  async function runAll() {
+    const legal = photos.pan ? "" : NAMES.pan;
+    if (legal) await Promise.all([runNames(), runEvidence(legal)]);
+    else { await runNames(); }
+  }
+
   async function runNames(variant = bankVariant) {
     setNamesBusy(true); setNamesErr(null); setNames(null);
     const anyPhoto = Object.keys(photos).length > 0;
@@ -277,6 +331,20 @@ function Root() {
     scrollDown();
   }
 
+  useEffect(() => {
+    if (names && photos.pan && !evidence && !evBusy) {
+      const legal = names.ai.documents.find((d) => d.doc === "PAN")?.name;
+      if (legal) runEvidence(legal);
+    }
+  }, [names]);
+
+  const docPlan: DocPlan | null = useMemo(() => {
+    if (!entity || !biz) return null;
+    const extra = [...(biz.policy.extraDocs || [])];
+    const fssaiNeeded = extra.some((d) => /fssai/i.test(d));
+    return DOCPLAN.plan({ entity, have: [...have, ...(fssaiNeeded && have.includes("fssai") ? ["fssai"] : [])], extraDocs: extra });
+  }, [entity, have, biz]);
+
   /* Readiness: rules decide what the pass shows. */
   const slotLabel = slot ? `${c.days[day]} ${slot}` : null;
   // Product rule: the bank name is what the ₹1 check compares with PAN and the seller can fix it cheaply, so anything short of a match blocks payment. An Aadhaar doubt goes to a reviewer.
@@ -289,13 +357,15 @@ function Root() {
       { label: c.rowCat, value: biz ? (biz.ai.category_label || biz.policy.label) : "—", tone: catTone, stamp: catTone === "ok" ? c.passed : catTone === "warn" ? c.review : c.fix, onFix: catTone === "ok" ? undefined : () => go(1) },
       { label: c.rowRoute, value: !route ? "—" : route === "instant" ? c.routeInstant : c.routeVideo(slotLabel || "—"), tone: routeTone, stamp: routeTone === "ok" ? c.passed : c.fix, onFix: routeTone === "ok" ? undefined : () => go(2) },
       { label: c.rowNames, value: namesTone === "ok" ? c.namesOk : namesTone === "warn" ? c.namesWarn : c.namesBad, tone: namesTone, stamp: namesTone === "ok" ? c.passed : namesTone === "warn" ? c.review : c.fix, onFix: namesTone === "ok" ? undefined : () => go(3) },
+      ...(docPlan ? [{ label: c.rowDocs, value: docPlan.ready ? c.docsReady : c.docsMissing(docPlan.items.filter((i) => i.status === "missing").length), tone: (docPlan.ready ? "ok" : "bad") as Tone, stamp: docPlan.ready ? c.passed : c.fix, onFix: docPlan.ready ? undefined : () => go(1) }] : []),
+      ...(evidence ? [{ label: c.rowProof, value: evidence.grid.verdict === "ok" ? c.proofOk : evidence.grid.verdict === "warn" ? c.proofWarn : c.proofBad, tone: evidence.grid.verdict as Tone, stamp: evidence.grid.verdict === "ok" ? c.passed : evidence.grid.verdict === "warn" ? c.review : c.fix, onFix: evidence.grid.verdict === "ok" ? undefined : () => go(3) }] : []),
       ...(siteMode === "site" && site && site.kind !== "social" ? [{ label: c.rowSite, value: site.ok ? (site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk) : c.siteDown, tone: (site.ok && site.missing.length === 0 ? "ok" : "bad") as Tone, stamp: site.ok && site.missing.length === 0 ? c.passed : c.fix, onFix: site.ok && site.missing.length === 0 ? undefined : () => go(1) }] : []),
     ];
-  }, [biz, route, slot, slotLabel, namesTone, site, siteMode, c]);
+  }, [biz, route, slot, slotLabel, namesTone, site, siteMode, docPlan, evidence, c]);
   const ready = !passRows.some((x) => x.tone === "bad");
 
   function restart() {
-    setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null); setSiteMode(null);
+    setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null); setSiteMode(null); setEntity(null); setHave([]); setHaveDone(false); setEvPhotos({}); setEvMismatch(false); setEvidence(null);
     setPreset("priya"); setBizText(PRESETS.priya[lang]); go(0);
   }
 
@@ -486,14 +556,66 @@ function Root() {
           )
         ) : null}
 
-        {/* What you'll need, once both questions are answered */}
+        {/* Q3: how is the business set up */}
         {biz && st !== "not_supported" && siteDone ? (
+          entity === null ? (
+            <Reveal>
+              <Txt th={th} v="h2">{c.entityTitle}</Txt>
+              <View style={{ gap: 8 }}>
+                {Object.entries(DOCPLAN.ENTITIES).map(([k, e]) => (
+                  <ChoiceRow key={k} th={th} icon={k === "individual" ? "user" : k === "proprietorship" ? "briefcase" : k === "partnership" ? "users" : "home"} label={e.label} sub={e.hint}
+                    onPress={() => { setEntity(k); setHave([]); setHaveDone(false); addLog({ kind: "rule", title: "Entity type", json: { entity: k } }); }} />
+                ))}
+              </View>
+            </Reveal>
+          ) : (
+            <Answered th={th} label={c.entityTitle} value={DOCPLAN.ENTITIES[entity].label} onEdit={() => { setEntity(null); setHave([]); setHaveDone(false); }} editLabel={c.edit} />
+          )
+        ) : null}
+
+        {/* Q4: what do you already have */}
+        {biz && st !== "not_supported" && siteDone && entity ? (
+          !haveDone ? (
+            <Reveal>
+              <Txt th={th} v="h2">{c.haveTitle}</Txt>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {[...HAVE_BY_ENTITY[entity], ...((biz.policy.extraDocs || []).some((d) => /fssai/i.test(d)) ? ["fssai"] : [])].map((k) => (
+                  <Chip key={k} th={th} label={DOCPLAN.HAVE[k].label} on={have.includes(k)} onPress={() => setHave((h) => (h.includes(k) ? h.filter((x) => x !== k) : [...h, k]))} />
+                ))}
+              </View>
+              <Button th={th} kind="secondary" compact label={have.length ? c.haveDone : c.haveNone} onPress={() => { setHaveDone(true); addLog({ kind: "rule", title: "Document plan (rules)", json: DOCPLAN.plan({ entity, have, extraDocs: biz.policy.extraDocs || [] }) }); }} />
+            </Reveal>
+          ) : (
+            <Answered th={th} label={c.haveTitle} value={have.length ? have.map((k) => DOCPLAN.HAVE[k].label).join(", ") : c.haveNone} onEdit={() => setHaveDone(false)} editLabel={c.edit} />
+          )
+        ) : null}
+
+        {/* The plan */}
+        {biz && st !== "not_supported" && siteDone && entity && haveDone && docPlan ? (
           <Reveal>
             <Panel th={th} tint>
-              <Txt th={th} v="h3">{c.youNeed}</Txt>
-              {biz.docs.map((d, i) => <IconRow key={i} th={th} icon={i === 0 ? "credit-card" : i === 1 ? "user" : i === 2 ? "briefcase" : "file-text"}><Txt th={th}>{d}</Txt></IconRow>)}
+              <Txt th={th} v="h3">{c.planTitle}</Txt>
+              <Txt th={th} v="small" color={th.muted}>{c.planSub}</Txt>
+              {docPlan.items.map((it) => (
+                <View key={it.key} style={{ gap: 4 }}>
+                  <IconRow th={th} icon={it.status === "missing" ? "x-circle" : it.status === "have" ? "check-circle" : "smartphone"} tone={it.status === "missing" ? "bad" : "ok"}>
+                    <Txt th={th}>{it.label}<Txt th={th} v="small" color={th.muted}>{"  · "}{it.status === "missing" ? c.planMissing : it.status === "have" ? c.planHave : c.planInApp}</Txt></Txt>
+                  </IconRow>
+                  {it.status === "missing" && it.how ? (
+                    <View style={{ marginLeft: 30, padding: 10, borderRadius: r.md, backgroundColor: th.surface, borderWidth: 1, borderColor: th.line, gap: 2 }}>
+                      <Txt th={th} v="smallMed">{it.how.what} · {it.how.time}</Txt>
+                      <Txt th={th} v="small" color={th.muted}>{it.how.how}</Txt>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
               <IconRow th={th} icon="link" tone="ok"><Txt th={th}>{siteMode === "site" ? c.routeSite : c.routeLinks}</Txt></IconRow>
-              {(biz.ai.flags || []).filter((f) => f.severity === "warn").map((f, i) => <IconRow key={`f${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th}>{f.text}</Txt></IconRow>)}
+              {docPlan.upgrade ? (
+                <View style={{ padding: 10, borderRadius: r.md, backgroundColor: th.brandTint, gap: 2 }}>
+                  <Txt th={th} v="smallMed" color={th.brand}>{docPlan.upgrade.title}</Txt>
+                  <Txt th={th} v="small">{docPlan.upgrade.body}</Txt>
+                </View>
+              ) : null}
             </Panel>
           </Reveal>
         ) : null}
@@ -502,7 +624,7 @@ function Root() {
     footer = biz
       ? st === "not_supported"
         ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setPreset(null); setSiteMode(null); setSite(null); }} />
-        : <Button th={th} label={c.s1Next} onPress={() => go(2)} disabled={!siteDone} />
+        : <Button th={th} label={c.s1Next} onPress={() => go(2)} disabled={!siteDone || !entity || !haveDone} />
       : ask
         ? <Button th={th} label={c.askCta} onPress={() => runClassify(ask)} busy={bizBusy} disabled={!ask.answer.trim()} />
         : <Button th={th} label={c.s1Cta} onPress={() => runClassify()} busy={bizBusy} disabled={!bizText.trim()} />;
@@ -585,8 +707,23 @@ function Root() {
               onSample={photos[k] ? () => { setPhotos((p) => { const n = { ...p }; delete n[k]; return n; }); setNames(null); } : undefined} />
           ))}
         </View>
+        <Txt th={th} v="h3">{c.evTitle}</Txt>
+        <Txt th={th} v="small" color={th.muted}>{c.evBody}</Txt>
+        <View style={{ gap: 10 }}>
+          {(["instagram", "catalog", "invoice"] as EvKey[]).map((k) => (
+            <DocRow key={k} th={th} c={c} label={c.ev[k]} scanning={evBusy}
+              src={evPhotos[k] ? { uri: evPhotos[k]!.uri } : EV_IMG[evSample(k)]}
+              isPhoto={!!evPhotos[k]}
+              onGallery={() => pickEv(k)}
+              onSample={evPhotos[k] ? () => { setEvPhotos((p) => { const n = { ...p }; delete n[k]; return n; }); setEvidence(null); } : undefined} />
+          ))}
+        </View>
+        <Pressable onPress={() => { setEvMismatch((v) => !v); setEvidence(null); }} accessibilityRole="switch" accessibilityState={{ checked: evMismatch }} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Icon name={evMismatch ? "toggle-right" : "toggle-left"} size={18} color={evMismatch ? th.brand : th.faint} />
+          <Txt th={th} v="small" color={th.muted}>{c.evMismatchToggle}</Txt>
+        </Pressable>
         <Txt th={th} v="small" color={th.faint}>{c.samplesNote}</Txt>
-        {namesBusy ? <Thinking th={th} label={c.s3Busy} /> : null}
+        {namesBusy || evBusy ? <Thinking th={th} label={c.s3BusyAll} /> : null}
         {namesErr ? <Notice th={th} tone="warn" title={namesErr} /> : null}
         {names ? (
           <Reveal>
@@ -615,10 +752,15 @@ function Root() {
             ) : null}
           </Reveal>
         ) : null}
+        {evidence ? (
+          <Reveal>
+            <ConsistencyGrid th={th} c={c} ev={evidence} />
+          </Reveal>
+        ) : null}
       </>
     );
-    footer = !names
-      ? <Button th={th} label={c.s3Cta} icon="maximize" onPress={() => runNames()} busy={namesBusy} />
+    footer = !names || (!evidence && !evBusy)
+      ? <Button th={th} label={c.s3CtaAll} icon="maximize" onPress={() => (names && !evidence ? runEvidence(legal) : runAll())} busy={namesBusy || evBusy} />
       : <Button th={th} label={c.s3Next} kind={bankFail ? "secondary" : "primary"} onPress={() => go(4)} />;
   }
 
@@ -636,6 +778,7 @@ function Root() {
                 <Icon name="shield" size={14} color={th.pos} />
                 <Txt th={th} v="small" color={th.muted} style={{ flex: 1 }}>{c.promise}</Txt>
               </View>
+              <Button th={th} kind="secondary" compact icon="folder" label={c.caseCta} onPress={() => setCaseOpen(true)} />
             </>
           )} />
       </>
@@ -758,6 +901,9 @@ function Root() {
           </>
         ) : null}
       </Sheet>
+      <Sheet th={th} wide={wide} visible={caseOpen} onClose={() => setCaseOpen(false)} title={c.caseTitle}>
+        <CaseFile th={th} c={c} biz={biz} bizText={bizText} ask={ask} entity={entity} plan={docPlan} site={siteMode === "site" ? site : null} names={names?.ai || null} route={route} slotLabel={slotLabel} evidence={evidence} rows={passRows} brand={brand} pan={pan} />
+      </Sheet>
       <Sheet th={th} wide={wide} visible={howOpen} onClose={() => setHowOpen(false)} title={c.howItWorks}>
         <HowItWorks th={th} step={step} log={log} srv={srv} mode={mode} setMode={setMode} live={live} />
       </Sheet>
@@ -803,6 +949,105 @@ function Root() {
 }
 
 /* ---------------- Pieces ---------------- */
+
+/** Facts × sources, each cell decided by rules. Mobile-first: one block per fact. */
+function ConsistencyGrid({ th, c, ev }: { th: Theme; c: Copy; ev: EvidenceResult }) {
+  const tone: Tone = ev.grid.verdict;
+  const short: Record<string, string> = { instagram: "Instagram", catalog: "Catalog", invoice: "Invoice" };
+  return (
+    <Panel th={th}>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Txt th={th} v="h3">{c.gridTitle}</Txt>
+          <Txt th={th} v="small" color={th.muted}>{c.gridSub}</Txt>
+        </View>
+        <Status th={th} tone={tone} label={tone === "ok" ? c.gridOk : tone === "warn" ? c.gridWarn : c.gridBad} />
+      </View>
+      {ev.grid.rows.map((row) => (
+        <View key={row.key} style={{ gap: 6, paddingTop: 10, borderTopWidth: 1, borderTopColor: th.line }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
+            <Txt th={th} v="smallMed">{row.label}</Txt>
+            <Txt th={th} v="tiny" color={th.muted} numberOfLines={1} style={{ flexShrink: 1, textAlign: "right" }}>{c.expected}: {row.expected}</Txt>
+          </View>
+          {Object.entries(row.cells).map(([sid, cell]) => {
+            const t: Tone = cell.state === "none" ? "warn" : (cell.state as Tone);
+            const [fg, bg] = toneColors(th, t);
+            return (
+              <View key={sid} style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+                <View style={{ width: 70, paddingVertical: 2, paddingHorizontal: 6, borderRadius: 6, backgroundColor: cell.state === "none" ? th.sunken : bg }}>
+                  <Text style={{ fontFamily: font.bodySemi, fontSize: 10.5, color: cell.state === "none" ? th.faint : fg }} numberOfLines={1}>{short[sid] || sid}</Text>
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Txt th={th} v="small" color={cell.state === "none" ? th.faint : th.ink} numberOfLines={2}>{cell.value}</Txt>
+                  {cell.state === "bad" || cell.state === "warn" ? <Txt th={th} v="tiny" color={fg}>{cell.why}</Txt> : null}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ))}
+    </Panel>
+  );
+}
+
+/** The packet a reviewer receives: everything already checked, with the open items first. */
+function CaseFile({ th, c, biz, bizText, ask, entity, plan, site, names, route, slotLabel, evidence, rows, brand, pan }: {
+  th: Theme; c: Copy; biz: BizResult | null; bizText: string; ask: Ask | null; entity: string | null; plan: DocPlan | null; site: SiteResult | null;
+  names: NamesAI | null; route: string | null; slotLabel: string | null; evidence: EvidenceResult | null; rows: PassRow[]; brand: string; pan: string;
+}) {
+  const open = rows.filter((r) => r.tone !== "ok");
+  const Sec = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <View style={{ gap: 6, paddingTop: 12, borderTopWidth: 1, borderTopColor: th.line }}><Txt th={th} v="smallMed" color={th.muted}>{title.toUpperCase()}</Txt>{children}</View>
+  );
+  const Line = ({ k, v, tone }: { k: string; v: string; tone?: Tone }) => (
+    <View style={{ flexDirection: "row", gap: 10 }}>
+      <Txt th={th} v="small" color={th.muted} style={{ width: 110 }}>{k}</Txt>
+      <Txt th={th} v="small" color={tone ? toneColors(th, tone)[0] : th.ink} style={{ flex: 1 }}>{v}</Txt>
+    </View>
+  );
+  return (
+    <>
+      <Txt th={th} v="small" color={th.muted}>{c.caseSub}</Txt>
+      <Notice th={th} tone={open.length ? "warn" : "ok"} title={open.length ? c.caseOpen(open.length) : c.caseReady}>
+        {open.map((r) => <Txt key={r.label} th={th} v="small">{r.label}: {r.value}</Txt>)}
+      </Notice>
+      <Sec title="Merchant">
+        <Line k="Legal name" v={names?.documents.find((d) => d.doc === "PAN")?.name || "—"} />
+        <Line k="Shop" v={brand} />
+        <Line k="PAN" v={`${pan.slice(0, 3)}•••${pan.slice(-2)}`} />
+        <Line k="Entity" v={entity ? DOCPLAN.ENTITIES[entity].label : "—"} />
+      </Sec>
+      <Sec title="Category (rules decided)">
+        <Line k="Seller said" v={bizText} />
+        {ask?.question ? <Line k="Asked" v={`${ask.question} → ${ask.answer}`} /> : null}
+        <Line k="Row" v={biz ? `${biz.policy.label} (${biz.policy.id})` : "—"} />
+        <Line k="Status" v={biz ? biz.status : "—"} tone={biz ? (biz.status === "supported" ? "ok" : biz.status === "needs_review" ? "warn" : "bad") : undefined} />
+        {biz?.candidates ? <Line k="Considered" v={biz.candidates.map((x) => x.label).slice(0, 5).join(" · ")} /> : null}
+      </Sec>
+      <Sec title="Documents">
+        {plan ? plan.items.map((i) => <Line key={i.key} k={i.status === "missing" ? "Missing" : i.status === "have" ? "Has" : "Collected"} v={i.label} tone={i.status === "missing" ? "bad" : "ok"} />) : <Line k="—" v="Not answered" />}
+      </Sec>
+      <Sec title="Identity and names (engine)">
+        {names ? names.comparisons.map((x) => <Line key={x.doc} k={`${x.doc} vs PAN`} v={`${x.verdict}${typeof x.score === "number" ? ` · score ${x.score.toFixed(2)}` : ""}`} tone={x.verdict === "match" ? "ok" : x.verdict === "likely_fail" ? "bad" : "warn"} />) : <Line k="—" v="Not run" />}
+        <Line k="KYC route" v={route === "instant" ? "Registry (CKYC)" : route === "video" ? `Video KYC, booked ${slotLabel || "—"}` : "—"} />
+      </Sec>
+      <Sec title="Business proof (cross-checked)">
+        {evidence ? (
+          <>
+            <Line k="Verdict" v={evidence.grid.verdict} tone={evidence.grid.verdict} />
+            {evidence.sources.map((s) => <Line key={s.id} k={s.label} v={[s.facts.business_name, (s.facts.products || []).slice(0, 4).join(", ")].filter(Boolean).join(" · ") || "unreadable"} />)}
+            {evidence.grid.flags.map((f, i) => <Line key={i} k={`Flag · ${f.row}`} v={`${f.source}: ${f.why}`} tone={f.state === "bad" ? "bad" : "warn"} />)}
+          </>
+        ) : <Line k="—" v="Not run" />}
+      </Sec>
+      {site ? (
+        <Sec title="Website">
+          {Object.values(site.pages).map((p) => <Line key={p.label} k={p.found ? "Found" : "Missing"} v={p.label} tone={p.found ? "ok" : "bad"} />)}
+        </Sec>
+      ) : null}
+    </>
+  );
+}
 
 /** A question already answered: compact row, tap to change. */
 function Answered({ th, label, value, onEdit, editLabel }: { th: Theme; label: string; value: string; onEdit: () => void; editLabel: string }) {
