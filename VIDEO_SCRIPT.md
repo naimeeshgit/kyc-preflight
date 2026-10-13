@@ -1,20 +1,20 @@
-# 90-second demo video — script and shot list
+# 90-second demo: final script
 
-Record the phone frame at https://kyc-preflight.vercel.app (Chrome, screen recording) with your voice over. Do one full run before recording so Live AI is warm.
+Record the browser window at https://kyc-preflight.vercel.app. Do one warm-up run first.
+**Pause the recording during every AI wait** (category check ~8 s, assistant ~8 s, cross-check ~15 s) and resume when the result appears.
 
-**Path:** Jewellery preset → "Instagram, WhatsApp or in person" → "Sole proprietorship" → "None of these" (red Udyam gap) → Edit → Udyam → That's all. Step 3: leave the default "short" bank sample so the name fix happens. Run the cross-check once clean, then tap "Catalog from another business" in the "Try the business proof" box and run it again.
+| # | Time | Tap | Say |
+|---|---|---|---|
+| 1 | 0–7 s | Landing page, then "Start checks" | "Small sellers pay ₹199 for Razorpay KYC and find out afterwards what a reviewer wanted. 'Paid, then rejected, no reason' is the top complaint we found across nine research methods." |
+| 2 | 7–17 s | Jewellery is pre-filled → "Check my category" → result → "Why this category" | "Priya sells handmade jewellery on Instagram. We match her words to Razorpay's 340 published categories. The model only picks among candidates, and fixed rules decide. Supported." |
+| 3 | 17–30 s | "Instagram, WhatsApp" → "Sole proprietorship" → "None of these" → red Udyam row → "How do I get it?" (show the answer) → close | "Her document list depends on how she's set up. She's a proprietor with no registration, so it says exactly what's missing: Udyam, ten minutes, free. If she's stuck, she asks right here. The assistant knows her case." |
+| 4 | 30–36 s | Edit → "Udyam registration" → "That's all" → Next | "She registers. Now her plan is complete, with nothing asked again later." |
+| 5 | 36–44 s | Tick consent → "Check my KYC route" → video call → tap 11:00 AM → Next | "She's not in the KYC registry, so she'll need a video call. She sees what to keep ready and books it now, not after paying." |
+| 6 | 44–56 s | "Read and cross-check everything" → bank "Partial match" → "Use my other account" → green | "We read her PAN, Aadhaar and bank proof. A name engine scores them the way the ₹1 bank check will. Her bank account is missing 'Lakshmi'. She switches accounts and it passes." |
+| 7 | 56–68 s | "Catalog from another business" → "Read and cross-check everything" → matrix with red crosses | "Then her proof: Instagram, catalog, an invoice. The model reads facts, rules cross-check them. Upload the wrong catalog and it catches a different business name and vape products, before she pays." |
+| 8 | 68–80 s | "See my go-live pass (1 open)" → pass with one FIX stamp, pay blocked → "See what Razorpay's reviewer receives" → scroll | "Pay stays blocked until nothing is red. And Razorpay's reviewer gets one pre-checked case file, open items first. She gets certainty; Razorpay gets a first-time-right application." |
+| 9 | 80–90 s | Close → scroll the landing page to "Measured, not asserted" | "It's measured: zero blocked businesses told 'supported', zero false name passes, and every outcome is one tap away to try. Everything a reviewer checks, checked before she pays." |
 
-| Time | On screen | Say |
-|---|---|---|
-| 0–8 s | Landing, "The problem vs the fix" | "New sellers on Razorpay pay ₹199 for KYC, then find out what a reviewer wanted. 'Paid, then rejected, no reason' is the most repeated complaint on Trustpilot, Play Store and Reddit." |
-| 8–14 s | Phone welcome screen | "The real test is 'is this a legitimate business?' A reviewer checks it by hand, after she pays. Pre-flight shows her that test up front." |
-| 14–26 s | Mic → jewellery description → result card → tap "Why this category" | "Priya describes her shop in Hinglish. A retriever picks 8 of Razorpay's 340 categories, the model chooses among those, and a fixed policy decides. If it's unsure, it asks one question." |
-| 26–38 s | "How is your business set up?" → Sole proprietorship → None → red Udyam row → tap "How do I get it?" (flash the chat answer) → close → Edit → Udyam → plan ready | "Her documents depend on how the business is set up. She's a proprietor with no registration, so it tells her what's missing: Udyam, ten minutes, free. Any question, she asks right here; the assistant knows her case and drafts what she needs, so she never leaves the app." |
-| 38–46 s | KYC route: consent → video call → slot | "She's not in the KYC registry, so she'll need a video call. She sees what to keep ready and books it now, not after paying." |
-| 46–54 s | Names: bank shows "Partial match" → "Use my other account" → green | "A name engine scores PAN, Aadhaar and bank the way the ₹1 bank check will. LAKSHMI is missing on the bank account; she switches accounts." |
-| 54–70 s | "Show us your business" → Read and cross-check → grid green → tap "Catalog from another business" → re-run → red cells (Raju Hardware, vape kits) | "Then her proof: Instagram, catalog, an invoice. The model only reads facts. Rules cross-check name, owner, products and prices across every source, as a reviewer would. Swap in the wrong catalog and it catches a different business name and restricted vape products, before she pays, not three days after." |
-| 70–80 s | Pass with red Business proof stamp → "See what Razorpay's reviewer receives" → case file, scroll | "Pay is blocked until nothing is red. And Razorpay's reviewer gets one pre-checked case file: open items first, every source, every score. The seller gets certainty, Razorpay gets a first-time-right application." |
-| 80–88 s | Back to step 1, tap the "Vapes" chip → "Don't pay the fee", then "See how it works" → scorecard | "Every branch is one tap away for you to try: blocked, review, a question, missing pages. And it's measured: 146 descriptions, zero blocked businesses called 'supported'; 304 name pairs, zero false passes. Anyone can run it live." |
-| 88–90 s | Landing | "Everything a reviewer will check, checked and fixed before she pays." |
+**If you have 10 spare seconds:** after step 3, tap "Write it for me" on a missing page (website path) to show the tap-to-answer questions and "Add to my application". Skip it if you're tight.
 
-Tips: speak slightly faster than feels natural; cuts carry it. Pause the recording during the 15-second cross-check and resume after it returns. Keep the cursor still while you talk.
+**Don't show:** Hinglish, the eval run, or the Try chips one by one. Say "one tap away" instead.
