@@ -42,7 +42,7 @@ Measured. Two labelled test sets ship in the app and anyone can run the category
 
 ## How we would measure it
 
-North star: share of paid KYC applications activated on first submission. Guardrails: fraud and chargeback rates of activated merchants flat against a holdout; paid-then-rejected rate, clarification rounds and onboarding tickets falling. Proposed commitment: refund the ₹199 if Pre-flight said "pay" and the reviewer rejects for a reason it should have caught, which makes the accuracy of green the number the team owns.
+North star: share of paid KYC applications activated on first submission. Guardrails: fraud and chargeback rates of activated merchants flat against a holdout; paid-then-rejected rate, clarification rounds and onboarding tickets falling. Proposed commitment: refund the ₹199 if Pre-flight said "pay" and the reviewer rejects for a reason it should have caught, which makes the accuracy of green the number the team owns. Test next: three to five real sellers running Pre-flight on their own phones (time to verdict, whether each stamp is understood, whether they still pay ₹199), then an A/B against today's flow on first-submission activation.
 
 ## Not built
 
