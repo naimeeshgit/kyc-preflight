@@ -1,56 +1,82 @@
-// Colour tokens follow Razorpay's Blade palette: azure brand, blue-gray neutrals, emerald / cider / crimson feedback.
+// Visual system: Razorpay Blade's azure brand and blue-gray neutrals on a quiet white app.
+// The one bold element is the navy "go-live pass". Everything else stays calm.
 import { useColorScheme } from "react-native";
-
-export type Theme = typeof light;
 
 export const light = {
   dark: false,
-  bg: "#F2F5FA",
+  canvas: "#F3F5F9",
   surface: "#FFFFFF",
-  surface2: "#F7F9FD",
-  fg: "#121A26",
-  muted: "#58636E",
-  faint: "#808C96",
-  border: "#DDE2E9",
-  brand: "#0F62F2",
-  brandStrong: "#0E52CC",
-  brandSubtle: "#EAF1FF",
-  navy: "#10224A",
-  onNavy: "#FFFFFF",
-  pos: "#008548",
-  posSubtle: "#E3F4EA",
-  warn: "#C25200",
-  warnSubtle: "#FFF0E6",
-  neg: "#CF2318",
-  negSubtle: "#FDEEEC",
+  sunken: "#F6F8FB",
+  ink: "#0E1726",
+  muted: "#5A6474",
+  faint: "#8A94A3",
+  line: "#E3E7EE",
+  brand: "#1563F2",
+  brandPress: "#0B4FCC",
+  brandTint: "#EAF1FE",
+  navy: "#0B1E3F",
+  navyInk: "#FFFFFF",
+  navyMuted: "#A9B8D6",
+  pos: "#00855D",
+  posTint: "#E4F4EC",
+  warn: "#B85000",
+  warnTint: "#FFF1E5",
+  neg: "#C92A1E",
+  negTint: "#FDECEA",
   code: "#EEF2F8",
+  scrim: "rgba(10,18,32,0.45)",
 };
+export type Theme = typeof light;
 
 export const dark: Theme = {
   dark: true,
-  bg: "#0D1219",
-  surface: "#151C27",
-  surface2: "#1B2330",
-  fg: "#EBF0F6",
-  muted: "#A9B3BE",
-  faint: "#808C96",
-  border: "#2A3443",
-  brand: "#4D8DFB",
-  brandStrong: "#7AABFF",
-  brandSubtle: "#16284A",
-  navy: "#0F1B33",
-  onNavy: "#FFFFFF",
-  pos: "#3DCB86",
-  posSubtle: "#12291E",
-  warn: "#F7A55A",
-  warnSubtle: "#33220F",
-  neg: "#F07870",
-  negSubtle: "#3A1715",
-  code: "#0F151E",
+  canvas: "#0A0F18",
+  surface: "#121A27",
+  sunken: "#0F1622",
+  ink: "#E9EEF5",
+  muted: "#9AA5B5",
+  faint: "#6F7A8B",
+  line: "#243042",
+  brand: "#4C8DFA",
+  brandPress: "#79A8FF",
+  brandTint: "#15284B",
+  navy: "#0E2148",
+  navyInk: "#FFFFFF",
+  navyMuted: "#A9B8D6",
+  pos: "#3CC48A",
+  posTint: "#0F2A1F",
+  warn: "#F2A15A",
+  warnTint: "#33210F",
+  neg: "#F07A70",
+  negTint: "#3A1714",
+  code: "#0C121C",
+  scrim: "rgba(0,0,0,0.6)",
 };
 
 export function useTheme(): Theme {
   return useColorScheme() === "dark" ? dark : light;
 }
 
-export const radius = { sm: 8, md: 10, lg: 12, xl: 16 };
+export const font = {
+  display: "TASAOrbiter_700Bold",
+  displayMed: "TASAOrbiter_600SemiBold",
+  body: "Inter_400Regular",
+  bodyMed: "Inter_500Medium",
+  bodySemi: "Inter_600SemiBold",
+  bodyBold: "Inter_700Bold",
+  mono: "IBMPlexMono_500Medium",
+  monoBold: "IBMPlexMono_600SemiBold",
+};
+
+export const type = {
+  h1: { fontFamily: font.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.3 },
+  h2: { fontFamily: font.display, fontSize: 21, lineHeight: 27, letterSpacing: -0.2 },
+  h3: { fontFamily: font.bodySemi, fontSize: 16, lineHeight: 22 },
+  body: { fontFamily: font.body, fontSize: 15, lineHeight: 22 },
+  bodyMed: { fontFamily: font.bodyMed, fontSize: 15, lineHeight: 22 },
+  small: { fontFamily: font.body, fontSize: 13, lineHeight: 19 },
+  smallMed: { fontFamily: font.bodyMed, fontSize: 13, lineHeight: 19 },
+  tiny: { fontFamily: font.bodyMed, fontSize: 11.5, lineHeight: 16 },
+};
+
+export const r = { sm: 8, md: 12, lg: 16, xl: 22, pill: 999 };
