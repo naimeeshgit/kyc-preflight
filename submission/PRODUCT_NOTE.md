@@ -42,9 +42,9 @@ Measured. Two labelled test sets ship in the app and anyone can run the category
 
 ## How we would measure it
 
-North star: share of paid KYC applications activated on first submission. Guardrails: fraud and chargeback rates of activated merchants flat against a holdout; paid-then-rejected rate, clarification rounds and onboarding tickets falling. Proposed commitment: refund the ₹199 if Pre-flight said "pay" and the reviewer rejects for a reason it should have caught, which makes the accuracy of green the number the team owns. Test next: three to five real sellers running Pre-flight on their own phones (time to verdict, whether each stamp is understood, whether they still pay ₹199), then an A/B against today's flow on first-submission activation.
+North star: share of paid KYC applications activated on first submission. Guardrails: fraud and chargeback rates of activated merchants flat against a holdout; paid-then-rejected rate, clarification rounds and onboarding tickets falling. Proposed commitment: refund the ₹199 if Pre-flight said "pay" and the reviewer rejects for a reason it should have caught, which makes the accuracy of green the number the team owns. Test next: 3 to 5 real sellers on their own phones (time to verdict, stamps understood), then an A/B against today's flow.
 
 ## Not built
 
-AI approvals or risk decisions, workarounds for restricted categories, the clarification loop after submission, settlement holds, and real CKYC, penny drop and payment calls (adapters carry the real shapes; calls are mocked). The AI build log covers how AI was used and every pivot.
+AI approvals or risk decisions, workarounds for restricted categories, the clarification loop after submission, settlement holds, and real CKYC, penny drop and payment calls (adapters carry the real shapes; calls are mocked).
 
