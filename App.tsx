@@ -12,6 +12,7 @@ import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from "@expo-google-fon
 import { font, r, Theme, useTheme } from "./src/theme";
 import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
+import { checkSite, SiteResult } from "./src/api";
 import { compareNames, scoreNames, Token } from "./src/names";
 import { Scorecard } from "./src/Scorecard";
 import { ckycSearch, captureFee, CkycSearchRequest } from "./src/adapters";
@@ -70,6 +71,9 @@ function Root() {
   const [biz, setBiz] = useState<BizResult | null>(null);
   const [ask, setAsk] = useState<Ask | null>(null);        // one clarifying question, when the verdict depends on it
   const [showCands, setShowCands] = useState(false);
+  const [siteUrl, setSiteUrl] = useState("");
+  const [site, setSite] = useState<SiteResult | null>(null);
+  const [siteBusy, setSiteBusy] = useState(false);
 
   const [pan, setPan] = useState("ABCPR0000X");
   const [panEdit, setPanEdit] = useState(false);
@@ -156,6 +160,21 @@ function Root() {
     scrollDown();
   }
 
+  async function runSite() {
+    const url = siteUrl.trim(); if (!url) return;
+    setSiteBusy(true); setSite(null);
+    try {
+      const res = await checkSite(url, Boolean(biz && biz.policy.category === "ecommerce"));
+      setSite(res);
+      haptic(res.ok && res.missing.length === 0 ? "success" : "warning");
+      addLog({ kind: "rule", title: "Website readiness (fetched live, rules decide)", ms: res.ms, note: res.kind === "site" ? `${res.linksSeen} links read · ${res.missing.length} missing` : res.kind, json: res });
+    } catch (e: any) {
+      setSite({ ok: false, kind: "unreachable", pages: {}, missing: [], notes: [e?.message || "error"], ms: 0 });
+      addLog({ kind: "rule", title: "Website readiness failed", json: { error: e?.message } });
+    }
+    setSiteBusy(false); scrollDown();
+  }
+
   async function runRoute() {
     setRouteBusy(true); setRoute(null); setSlot(null);
     const req: CkycSearchRequest = { id_type: "PAN", id_number_masked: pan.slice(0, 3) + "•••" + pan.slice(-2), consent: { given: true, at: new Date().toISOString(), purpose: "merchant_onboarding_kyc" } };
@@ -223,12 +242,13 @@ function Root() {
       { label: c.rowCat, value: biz ? (biz.ai.category_label || biz.policy.label) : "—", tone: catTone, stamp: catTone === "ok" ? c.passed : catTone === "warn" ? c.review : c.fix, onFix: catTone === "ok" ? undefined : () => go(1) },
       { label: c.rowRoute, value: !route ? "—" : route === "instant" ? c.routeInstant : c.routeVideo(slotLabel || "—"), tone: routeTone, stamp: routeTone === "ok" ? c.passed : c.fix, onFix: routeTone === "ok" ? undefined : () => go(2) },
       { label: c.rowNames, value: namesTone === "ok" ? c.namesOk : namesTone === "warn" ? c.namesWarn : c.namesBad, tone: namesTone, stamp: namesTone === "ok" ? c.passed : namesTone === "warn" ? c.review : c.fix, onFix: namesTone === "ok" ? undefined : () => go(3) },
+      ...(site && site.kind !== "social" ? [{ label: c.rowSite, value: site.ok ? (site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk) : c.siteDown, tone: (site.ok && site.missing.length === 0 ? "ok" : "bad") as Tone, stamp: site.ok && site.missing.length === 0 ? c.passed : c.fix, onFix: site.ok && site.missing.length === 0 ? undefined : () => go(1) }] : []),
     ];
-  }, [biz, route, slot, slotLabel, namesTone, c]);
+  }, [biz, route, slot, slotLabel, namesTone, site, c]);
   const ready = !passRows.some((x) => x.tone === "bad");
 
   function restart() {
-    setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short");
+    setBiz(null); setBizErr(null); setRoute(null); setSlot(null); setConsent(false); setNames(null); setNamesErr(null); setPhotos({}); setBankVariant("short"); setSite(null); setSiteUrl(""); setAsk(null);
     setPreset("priya"); setBizText(PRESETS.priya[lang]); go(0);
   }
 
@@ -354,6 +374,32 @@ function Root() {
                   {biz.docs.map((d, i) => <IconRow key={i} th={th} icon={i === 0 ? "credit-card" : i === 1 ? "user" : i === 2 ? "briefcase" : "file-text"}><Txt th={th}>{d}</Txt></IconRow>)}
                   <IconRow th={th} icon="link" tone="ok"><Txt th={th}>{biz.website ? c.routeSite : c.routeLinks}</Txt></IconRow>
                   {(biz.ai.flags || []).filter((f) => f.severity === "warn").map((f, i) => <IconRow key={`f${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th}>{f.text}</Txt></IconRow>)}
+                </Panel>
+                <Panel th={th}>
+                  <Txt th={th} v="h3">{c.siteTitle}</Txt>
+                  <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+                    <View style={{ flex: 1, borderWidth: 1.5, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface }}>
+                      <TextInput value={siteUrl} onChangeText={(v) => { setSiteUrl(v); setSite(null); }} placeholder={c.sitePlaceholder} placeholderTextColor={th.faint} autoCapitalize="none" autoCorrect={false} keyboardType="url" accessibilityLabel={c.siteTitle}
+                        style={{ minHeight: 44, paddingHorizontal: 12, fontFamily: font.body, fontSize: 15, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }} />
+                    </View>
+                    <Button th={th} kind="secondary" compact label={c.siteCta} onPress={runSite} busy={siteBusy} disabled={!siteUrl.trim() || siteBusy} />
+                  </View>
+                  {siteBusy ? <Thinking th={th} label={c.siteBusy} /> : null}
+                  {site ? (
+                    <Reveal>
+                      {site.kind === "social" ? <Notice th={th} tone="ok" title={c.siteSocial} /> : !site.ok ? <Notice th={th} tone="bad" title={c.siteDown}>{site.notes.map((n, i) => <Txt key={i} th={th} v="small">{n}</Txt>)}</Notice> : (
+                        <>
+                          <Status th={th} tone={site.missing.length ? "bad" : "ok"} label={site.missing.length ? c.siteMissing(site.missing.length) : c.siteOk} />
+                          {Object.entries(site.pages).map(([k, p]) => (
+                            <IconRow key={k} th={th} icon={p.found ? "check-circle" : "x-circle"} tone={p.found ? (p.thin ? "warn" : "ok") : "bad"}>
+                              <Txt th={th}>{p.label}{p.found && p.linkText ? <Txt th={th} v="small" color={th.muted}>  · {p.linkText}</Txt> : null}</Txt>
+                            </IconRow>
+                          ))}
+                          {site.notes.map((n, i) => <IconRow key={`n${i}`} th={th} icon="alert-triangle" tone="warn"><Txt th={th} v="small">{n}</Txt></IconRow>)}
+                        </>
+                      )}
+                    </Reveal>
+                  ) : null}
                 </Panel>
               </>
             )}
@@ -744,13 +790,15 @@ function Tag({ th, kind }: { th: Theme; kind: LogKind }) {
 
 const PARTS: Record<number, [LogKind, string, string][]> = {
   0: [["rule", "Fee shown first", "The full cost is visible before any input, and is charged only after the checks pass."]],
-  1: [["ai", "Description to category", "Claude maps a free-text, often Hinglish description to one row of the policy table and pulls out stated facts like reselling, GST and website."],
-      ["rule", "Eligibility and documents", "The policy table decides supported, review or not supported. AI never decides eligibility, and low confidence becomes a review."]],
+  1: [["rule", "Retrieve candidates", "A lexical retriever picks 8 of 340 sub-categories from Razorpay's published taxonomy; the model never sees the whole table."],
+      ["ai", "Choose and explain", "Claude picks only among those candidates, extracts stated facts, and asks one question when the verdict depends on something unsaid."],
+      ["rule", "Decision policy", "Thresholds and a blocked-term tripwire turn confidence into decided, ask, or reviewer decides. AI never decides eligibility."],
+      ["rule", "Website readiness", "The site is fetched live and checked for the policy pages reviewers require: terms, privacy, refund, shipping, contact."]],
   2: [["mock", "KYC registry lookup", "Mocked here. In production this is the consented lookup onboarding already runs, moved before payment."],
       ["rule", "Route and preparation", "Instant route, or a video call with what to keep ready and a slot booked now, instead of a surprise after paying."]],
   3: [["ai", "Read the documents", "Claude vision reads the holder name on each photo: camera, gallery, or the built-in specimens."],
-      ["ai", "Reconcile names", "Judges order swaps, missing words, initials and spelling variants the way a bank name check does, and predicts the ₹1 result."],
-      ["rule", "Word-by-word view", "A deterministic comparison draws which words match, so the merchant sees exactly what's missing."]],
+      ["rule", "Name-match engine", "Transliteration, honorifics, abbreviations, phonetic keys and word alignment give a score and the verdict. The model's reason is kept; its verdict is overridden if the engine disagrees."],
+      ["rule", "Word-by-word view", "The same engine draws which words match, so the merchant sees exactly what's missing."]],
   4: [["rule", "Pay gate", "Any red stamp disables payment. Tapping a red stamp takes the merchant to the fix."]],
   5: [["mock", "Submission", "Simulated. No payment or application is created."]],
 };

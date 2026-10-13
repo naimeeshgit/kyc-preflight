@@ -54,3 +54,7 @@ export type NamesResult = AIResult<NamesAI> & {
 };
 export const readNames = (docs: { pan: DocInput; aadhaar: DocInput; bank: DocInput }, lang: Lang) =>
   post<NamesResult>("/api/names", { docs, lang }, 60000);
+
+export type SitePage = { label: string; found: boolean; url?: string; linkText?: string; status?: number; words?: number; thin?: boolean };
+export type SiteResult = { ok: boolean; kind: "site" | "social" | "unreachable"; finalUrl?: string; status?: number; pages: Record<string, SitePage>; missing: string[]; notes: string[]; linksSeen?: number; ms: number };
+export const checkSite = (url: string, sellsGoods: boolean) => post<SiteResult>("/api/site", { url, sellsGoods }, 30000);
