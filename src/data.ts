@@ -1,11 +1,20 @@
-import POLICY_JSON from "../shared/policy.json";
+import TAXONOMY_JSON from "../shared/taxonomy.json";
 
 export type Lang = "en" | "hi";
 export type Status = "supported" | "needs_review" | "not_supported";
-export type Policy = { id: string; label: string; status: Status; extra?: string; resellerDoc?: boolean };
-export const POLICY = POLICY_JSON as Policy[];
+export type Policy = { id: string; category: string; categoryLabel: string; label: string; status: Status; reason?: string; extraDocs?: string[]; resellerDoc?: boolean };
+/** Razorpay's published onboarding taxonomy (20 categories, 340 sub-categories) with a status per row. */
+export const POLICY = TAXONOMY_JSON as Policy[];
+export const OTHER_ID = "others.others";
 export const policyById = (id?: string): Policy =>
-  POLICY.find((p) => p.id === id) || (POLICY.find((p) => p.id === "other") as Policy);
+  POLICY.find((p) => p.id === id) || (POLICY.find((p) => p.id === OTHER_ID) as Policy);
+export const TAXONOMY_STATS = {
+  rows: POLICY.length,
+  categories: new Set(POLICY.map((p) => p.category)).size,
+  supported: POLICY.filter((p) => p.status === "supported").length,
+  needs_review: POLICY.filter((p) => p.status === "needs_review").length,
+  not_supported: POLICY.filter((p) => p.status === "not_supported").length,
+};
 
 /* Fees: rules, not AI. */
 export const FEE = 199;
@@ -18,12 +27,19 @@ export type Flag = { severity: "info" | "warn"; text: string };
 export type ClassifyAI = {
   policy_id: string; category_label?: string; sub_category?: string; confidence?: number;
   is_reseller?: boolean | null; has_gst?: boolean | null; has_website?: boolean | null;
-  channels?: string[]; flags?: Flag[]; explanation?: string;
+  channels?: string[]; flags?: Flag[]; explanation?: string; question?: string | null;
 };
+/** What the retriever put in front of the model. */
+export type Candidate = { id: string; label: string; categoryLabel: string; status: Status; score: number; hits: string[] };
+/** The server's deterministic decision after the model's reading. */
+export type Decision =
+  | { state: "ask"; question: string }
+  | { state: "reviewer"; why: "low_confidence" | "mixed_candidates" }
+  | { state: "decided"; status: Status; policy: Policy };
 export type Verdict = "match" | "likely_fail" | "unclear";
 export type NamesAI = {
   documents: { doc: string; name: string; readable?: boolean }[];
-  comparisons: { doc: string; verdict: Verdict; reason: string; fix: string | null }[];
+  comparisons: { doc: string; verdict: Verdict; reason: string; fix: string | null; score?: number; note?: string | null; model_verdict?: Verdict }[];
   summary?: string;
 };
 
@@ -51,7 +67,7 @@ type Loc<T> = { en: T; hi: T };
 /* Recorded AI outputs from the same prompts, used when the server is unreachable. */
 export const REC_CLASSIFY: Record<string, Omit<ClassifyAI, "flags" | "explanation"> & Loc<{ explanation: string; flags: Flag[] }>> = {
   priya: {
-    policy_id: "jewellery_fashion", category_label: "Fashion & handmade jewellery", sub_category: "Handmade kundan & oxidised jewellery",
+    policy_id: "ecommerce.jewellery_and_watch_stores", category_label: "Jewellery and watch stores", sub_category: "Handmade kundan & oxidised jewellery",
     confidence: 0.94, is_reseller: false, has_gst: false, has_website: false, channels: ["Instagram", "WhatsApp"],
     en: { explanation: "You make and sell handmade fashion jewellery, which is a supported category. You can sign up as an individual without GST or a website.",
       flags: [{ severity: "info", text: "No website needed to start: you can collect with Payment Links and a QR code." }] },
@@ -59,7 +75,7 @@ export const REC_CLASSIFY: Record<string, Omit<ClassifyAI, "flags" | "explanatio
       flags: [{ severity: "info", text: "Shuru karne ke liye website zaroori nahi: Payment Links aur QR code se payment le sakti hain." }] },
   },
   tools: {
-    policy_id: "hardware_tools", category_label: "Hardware & tools", sub_category: "Hand and power tools (resale)",
+    policy_id: "ecommerce.hardware_equipment_and_supply_stores", category_label: "Hardware equipment and supply stores", sub_category: "Hand and power tools (resale)",
     confidence: 0.9, is_reseller: true, has_gst: false, has_website: false, channels: ["WhatsApp"],
     en: { explanation: "Selling hardware tools is supported. Because you resell, keep proof of where your stock comes from.",
       flags: [{ severity: "warn", text: "Resellers may be asked for one purchase invoice from their supplier. Keep a clear photo ready." }] },
@@ -67,7 +83,7 @@ export const REC_CLASSIFY: Record<string, Omit<ClassifyAI, "flags" | "explanatio
       flags: [{ severity: "warn", text: "Resellers se supplier ka ek purchase invoice maanga ja sakta hai. Uski saaf photo ready rakhein." }] },
   },
   astro: {
-    policy_id: "astrology_spiritual", category_label: "Astrology & spiritual services", sub_category: "Online astrology consultations",
+    policy_id: "services.debt_marriage_personal_counseling_service", category_label: "Personal counselling services", sub_category: "Online astrology consultations",
     confidence: 0.92, is_reseller: false, has_gst: null, has_website: false, channels: ["Video call"],
     en: { explanation: "Astrology services go to a manual review and are sometimes declined. You'll know the outcome of this step before paying any fee.",
       flags: [{ severity: "warn", text: "Expect a reviewer to ask how you deliver the service and handle refunds." }] },
@@ -150,6 +166,12 @@ const en = {
   saved: "saved",
   reviewNote: "A reviewer will look at this category by hand. You'll know where you stand before you're charged anything more.",
   lowConf: "We're not sure which category fits. A reviewer will confirm it.",
+  mixedConf: "Your description sits between categories with different rules. A reviewer will confirm it rather than us guessing.",
+  askTitle: "One question first",
+  askPlaceholder: "Type your answer",
+  askWhy: "Your answer changes the outcome, so we ask instead of guessing.",
+  askCta: "Answer and check",
+  considered: (n: number) => `Also considered ${n - 1} other ${n - 1 === 1 ? "category" : "categories"}`,
   tryAnother: "Try a different description",
   s1Next: "Next: KYC route",
   s2Title: "How will we verify you?",
@@ -265,6 +287,12 @@ const hi: Copy = {
   saved: "bach gaye",
   reviewNote: "Is category ko reviewer haath se dekhenge. Aur kuch charge hone se pehle aapko pata rahega.",
   lowConf: "Kaunsi category fit hogi, pakka nahi. Reviewer confirm karenge.",
+  mixedConf: "Aapka description aisi categories ke beech hai jinke rules alag hain. Hum guess nahi karenge, reviewer confirm karenge.",
+  askTitle: "Pehle ek sawaal",
+  askPlaceholder: "Apna jawab likhiye",
+  askWhy: "Aapke jawab se result badalta hai, isliye guess karne ki jagah pooch rahe hain.",
+  askCta: "Jawab dekar check karein",
+  considered: (n: number) => `${n - 1} aur ${n - 1 === 1 ? "category" : "categories"} bhi dekhi gayi`,
   tryAnother: "Alag description try karein",
   s1Next: "Aage: KYC route",
   s2Title: "Aapko verify kaise karenge?",

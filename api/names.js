@@ -2,6 +2,7 @@
 // Each doc is either { sample: "pan" | "aadhaar" | "bank_short" | "bank_full" } or { base64, mediaType } from the camera / gallery.
 const { namesPrompt, callClaude, cors, readBody } = require("./_lib/claude");
 const SPECIMENS = require("./_lib/specimens");
+const NM = require("../shared/namematch");
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_B64 = 1_800_000; // ~1.3 MB per image after base64
@@ -35,7 +36,22 @@ module.exports = async (req, res) => {
     ];
     const { json, model } = await callClaude(content, { maxTokens: 1024, schema: "names" });
     if (!Array.isArray(json.comparisons)) return res.status(502).json({ error: "Unexpected model output" });
-    return res.status(200).json({ ai: json, model, ms: Date.now() - started });
+    // The model reads; the engine decides. Keep the model's plain-language reason and fix, but the
+    // verdict and score come from the deterministic name-match engine, and disagreements are logged.
+    const readName = (doc) => (json.documents || []).find((d) => d.doc === doc) || {};
+    const legal = readName("PAN").name || "";
+    const engine = {};
+    const disagreements = [];
+    for (const doc of ["Aadhaar", "Bank"]) {
+      const d = readName(doc);
+      const cmp = NM.compare(legal, d.name || "");
+      const verdict = d.readable === false || !legal ? "unclear" : NM.verdictFor(doc, cmp);
+      engine[doc] = { score: cmp.score, verdict, note: cmp.note, tokens: cmp.tokens };
+      const c = json.comparisons.find((x) => x.doc === doc);
+      if (c) { if (c.verdict !== verdict) disagreements.push({ doc, model: c.verdict, engine: verdict, score: cmp.score }); c.model_verdict = c.verdict; c.verdict = verdict; c.score = cmp.score; c.note = cmp.note || null; }
+      else json.comparisons.push({ doc, verdict, reason: "", fix: null, score: cmp.score, note: cmp.note || null });
+    }
+    return res.status(200).json({ ai: json, engine, disagreements, thresholds: NM.THRESHOLDS, model, ms: Date.now() - started });
   } catch (e) {
     return res.status(e.status || 500).json({ error: e.message || "Server error" });
   }

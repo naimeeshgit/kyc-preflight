@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import type { ClassifyAI, Lang, NamesAI } from "./data";
+import type { Candidate, ClassifyAI, Decision, Lang, NamesAI } from "./data";
 
 // Web: the app and the API are served from the same Vercel deployment, so relative URLs work.
 // Native: set EXPO_PUBLIC_API_URL to the deployed URL (e.g. https://kyc-preflight.vercel.app).
@@ -42,9 +42,15 @@ export async function health(): Promise<Health | null> {
 
 export type AIResult<T> = { ai: T; model: string; ms: number };
 
-export const classify = (text: string, lang: Lang) =>
-  post<AIResult<ClassifyAI>>("/api/classify", { text, lang });
+export type ClassifyResult = AIResult<ClassifyAI> & { decision: Decision; candidates: Candidate[]; queryTerms: string[] };
+export const classify = (text: string, lang: Lang, qa?: { question: string; answer: string }) =>
+  post<ClassifyResult>("/api/classify", { text, lang, qa });
 
 export type DocInput = { sample: string } | { base64: string; mediaType: string };
+export type NamesResult = AIResult<NamesAI> & {
+  engine: Record<string, { score: number; verdict: string; note: string | null }>;
+  disagreements: { doc: string; model: string; engine: string; score: number }[];
+  thresholds: { match: number; review: number };
+};
 export const readNames = (docs: { pan: DocInput; aadhaar: DocInput; bank: DocInput }, lang: Lang) =>
-  post<AIResult<NamesAI>>("/api/names", { docs, lang }, 60000);
+  post<NamesResult>("/api/names", { docs, lang }, 60000);

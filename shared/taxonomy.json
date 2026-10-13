@@ -1,0 +1,2818 @@
+[
+ {
+  "id": "financial_services.mutual_fund",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Mutual fund",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "extraDocs": [
+   "SEBI / AMFI registration"
+  ]
+ },
+ {
+  "id": "financial_services.lending",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Lending",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "extraDocs": [
+   "RBI NBFC registration or lending licence"
+  ],
+  "keywords": "loan udhaar lending credit"
+ },
+ {
+  "id": "financial_services.cryptocurrency",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Cryptocurrency",
+  "status": "not_supported",
+  "reason": "Terms §17: virtual currency, crypto products, NFTs",
+  "keywords": "crypto bitcoin usdt nft token"
+ },
+ {
+  "id": "financial_services.insurance",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Insurance",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "extraDocs": [
+   "IRDAI licence"
+  ],
+  "keywords": "insurance bima policy"
+ },
+ {
+  "id": "financial_services.nbfc",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "NBFC",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "extraDocs": [
+   "RBI NBFC registration"
+  ]
+ },
+ {
+  "id": "financial_services.cooperatives",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Cooperatives",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer"
+ },
+ {
+  "id": "financial_services.pension_fund",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Pension fund",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer"
+ },
+ {
+  "id": "financial_services.forex",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Forex",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "extraDocs": [
+   "RBI authorised-dealer licence"
+  ],
+  "keywords": "forex currency exchange dollar"
+ },
+ {
+  "id": "financial_services.securities",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Securities",
+  "status": "not_supported",
+  "reason": "Terms §17: securities and government bonds"
+ },
+ {
+  "id": "financial_services.commodities",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Commodities",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer"
+ },
+ {
+  "id": "financial_services.accounting",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Accounting",
+  "status": "supported",
+  "keywords": "accounting bookkeeping gst filing ca"
+ },
+ {
+  "id": "financial_services.financial_advisor",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Financial advisor",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer"
+ },
+ {
+  "id": "financial_services.crowdfunding",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Crowdfunding",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "keywords": "crowdfunding fundraiser donations collect contributions pay what you want"
+ },
+ {
+  "id": "financial_services.trading",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Trading",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "keywords": "trading tips stock tips calls telegram"
+ },
+ {
+  "id": "financial_services.betting",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Betting",
+  "status": "not_supported",
+  "reason": "Terms §17: gaming/gambling, sports bets",
+  "keywords": "betting satta dream11 bet"
+ },
+ {
+  "id": "financial_services.get_rich_schemes",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Get rich schemes",
+  "status": "not_supported",
+  "reason": "Terms §17: get-rich-quick and pyramid schemes",
+  "keywords": "double your money guaranteed returns scheme investment plan"
+ },
+ {
+  "id": "financial_services.moneysend_funding",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Moneysend funding",
+  "status": "not_supported",
+  "reason": "Terms §17: money laundering / unlicensed MSB"
+ },
+ {
+  "id": "financial_services.wire_transfers_and_money_orders",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Wire transfers and money orders",
+  "status": "not_supported",
+  "reason": "Terms §17: unlicensed money service / value-transfer businesses"
+ },
+ {
+  "id": "financial_services.tax_preparation_services",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Tax preparation services",
+  "status": "supported",
+  "keywords": "itr filing tax return"
+ },
+ {
+  "id": "financial_services.tax_payments",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Tax payments",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer"
+ },
+ {
+  "id": "financial_services.digital_goods",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "Digital goods",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer",
+  "keywords": "digital goods game credits top up diamonds uc"
+ },
+ {
+  "id": "financial_services.atms",
+  "category": "financial_services",
+  "categoryLabel": "Financial services",
+  "label": "ATMs",
+  "status": "needs_review",
+  "reason": "Regulated financial activity; licence and bank-partner approval checked by a reviewer"
+ },
+ {
+  "id": "education.college",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "College",
+  "status": "supported",
+  "extraDocs": [
+   "Affiliation / recognition letter"
+  ]
+ },
+ {
+  "id": "education.schools",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Schools",
+  "status": "supported",
+  "extraDocs": [
+   "School recognition certificate"
+  ]
+ },
+ {
+  "id": "education.university",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "University",
+  "status": "supported",
+  "extraDocs": [
+   "UGC recognition"
+  ]
+ },
+ {
+  "id": "education.professional_courses",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Professional courses",
+  "status": "supported",
+  "keywords": "certification skill course training"
+ },
+ {
+  "id": "education.distance_learning",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Distance learning",
+  "status": "supported"
+ },
+ {
+  "id": "education.day_care",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Day care",
+  "status": "needs_review",
+  "reason": "Child-care licensing checked",
+  "keywords": "creche day care playschool"
+ },
+ {
+  "id": "education.coaching",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Coaching",
+  "status": "supported",
+  "keywords": "tuition coaching classes teach padhana padhai students batch jee neet"
+ },
+ {
+  "id": "education.elearning",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Elearning",
+  "status": "supported",
+  "keywords": "online course courses udemy recorded video lectures"
+ },
+ {
+  "id": "education.vocational_and_trade_schools",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Vocational and trade schools",
+  "status": "supported",
+  "keywords": "computer course tailoring course beautician training skill"
+ },
+ {
+  "id": "education.sporting_clubs",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Sporting clubs",
+  "status": "supported",
+  "keywords": "cricket academy football coaching sports club"
+ },
+ {
+  "id": "education.dance_halls_studios_and_schools",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Dance halls studios and schools",
+  "status": "supported",
+  "keywords": "dance classes zumba music classes singing"
+ },
+ {
+  "id": "education.correspondence_schools",
+  "category": "education",
+  "categoryLabel": "Education",
+  "label": "Correspondence schools",
+  "status": "supported"
+ },
+ {
+  "id": "healthcare.pharmacy",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Pharmacy",
+  "status": "needs_review",
+  "reason": "Drug licence (Form 20/21) and FSSAI/CDSCO checks by a reviewer",
+  "extraDocs": [
+   "Drug licence (Form 20/21)"
+  ],
+  "keywords": "medicines dawai pharmacy medical store chemist"
+ },
+ {
+  "id": "healthcare.clinic",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Clinic",
+  "status": "supported",
+  "extraDocs": [
+   "Clinic registration / practitioner registration"
+  ],
+  "keywords": "clinic doctor consultation opd"
+ },
+ {
+  "id": "healthcare.hospital",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Hospital",
+  "status": "supported",
+  "extraDocs": [
+   "Hospital registration"
+  ]
+ },
+ {
+  "id": "healthcare.lab",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Lab",
+  "status": "needs_review",
+  "reason": "NABL/registration checked",
+  "extraDocs": [
+   "Lab registration"
+  ],
+  "keywords": "pathology lab blood test"
+ },
+ {
+  "id": "healthcare.dietician",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Dietician",
+  "status": "supported",
+  "keywords": "diet dietician nutrition weight loss plan"
+ },
+ {
+  "id": "healthcare.fitness",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Fitness",
+  "status": "supported",
+  "keywords": "gym fitness trainer yoga personal training"
+ },
+ {
+  "id": "healthcare.health_coaching",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Health coaching",
+  "status": "supported",
+  "keywords": "wellness coach health coach"
+ },
+ {
+  "id": "healthcare.health_products",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Health products",
+  "status": "needs_review",
+  "reason": "Claims about cures are prohibited; product list checked by a reviewer",
+  "keywords": "ayurvedic supplements protein herbal products cure"
+ },
+ {
+  "id": "healthcare.drug_stores",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Drug stores",
+  "status": "needs_review",
+  "reason": "Drug licence checked by a reviewer",
+  "extraDocs": [
+   "Drug licence (Form 20/21)"
+  ],
+  "keywords": "medical store chemist dawai"
+ },
+ {
+  "id": "healthcare.healthcare_marketplace",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Healthcare marketplace",
+  "status": "needs_review",
+  "reason": "Marketplace model and licences checked by a reviewer"
+ },
+ {
+  "id": "healthcare.osteopaths",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Osteopaths",
+  "status": "supported"
+ },
+ {
+  "id": "healthcare.medical_equipment_and_supply_stores",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Medical equipment and supply stores",
+  "status": "supported",
+  "keywords": "medical equipment wheelchair bp machine surgical"
+ },
+ {
+  "id": "healthcare.podiatrists_and_chiropodists",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Podiatrists and chiropodists",
+  "status": "supported"
+ },
+ {
+  "id": "healthcare.dentists_and_orthodontists",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Dentists and orthodontists",
+  "status": "supported",
+  "extraDocs": [
+   "Dental council registration"
+  ]
+ },
+ {
+  "id": "healthcare.hardware_stores",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Hardware stores",
+  "status": "supported"
+ },
+ {
+  "id": "healthcare.ophthalmologists",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Ophthalmologists",
+  "status": "supported"
+ },
+ {
+  "id": "healthcare.orthopedic_goods_stores",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Orthopedic goods stores",
+  "status": "supported"
+ },
+ {
+  "id": "healthcare.testing_laboratories",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Testing laboratories",
+  "status": "needs_review",
+  "reason": "Registration checked"
+ },
+ {
+  "id": "healthcare.doctors",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Doctors",
+  "status": "supported",
+  "extraDocs": [
+   "Medical council registration"
+  ],
+  "keywords": "doctor consultation"
+ },
+ {
+  "id": "healthcare.health_practitioners_medical_services",
+  "category": "healthcare",
+  "categoryLabel": "Healthcare",
+  "label": "Health practitioners medical services",
+  "status": "supported"
+ },
+ {
+  "id": "ecommerce.ecommerce_marketplace",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Ecommerce marketplace",
+  "status": "needs_review",
+  "reason": "Marketplace: seller KYC model checked by a reviewer",
+  "keywords": "marketplace multi vendor sellers platform"
+ },
+ {
+  "id": "ecommerce.agriculture",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Agriculture",
+  "status": "needs_review",
+  "reason": "Pesticides are regulated; product list checked",
+  "keywords": "seeds beej khad fertilizer nursery plants kheti agri"
+ },
+ {
+  "id": "ecommerce.books",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Books",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "books kitab notes stationery second hand"
+ },
+ {
+  "id": "ecommerce.electronics_and_furniture",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Electronics and furniture",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "electronics mobile phone accessories charger earphones gadgets laptop"
+ },
+ {
+  "id": "ecommerce.coupons",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Coupons",
+  "status": "needs_review",
+  "reason": "Monetisable credits are restricted; model checked",
+  "keywords": "coupons vouchers gift cards discount codes"
+ },
+ {
+  "id": "ecommerce.rental",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Rental",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "rent kiraya rental lease costume camera"
+ },
+ {
+  "id": "ecommerce.fashion_and_lifestyle",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Fashion and lifestyle",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "kapde clothes dress kurti saree sari lehenga suit salwar boutique fashion garments stitching readymade instagram reseller"
+ },
+ {
+  "id": "ecommerce.gifting",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Gifting",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "gift gifting hamper return gifts diwali rakhi customised personalised mug frame"
+ },
+ {
+  "id": "ecommerce.grocery",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Grocery",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "grocery kirana rashan ration atta dal rice masala spices dry fruits organic"
+ },
+ {
+  "id": "ecommerce.baby_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Baby products",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "baby diapers toys kids"
+ },
+ {
+  "id": "ecommerce.office_supplies",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Office supplies",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.wholesale",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Wholesale",
+  "status": "needs_review",
+  "reason": "B2B volumes; invoices checked",
+  "extraDocs": [
+   "GST registration",
+   "Purchase invoices from suppliers"
+  ],
+  "keywords": "wholesale thok bulk b2b distributor"
+ },
+ {
+  "id": "ecommerce.religious_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Religious products",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "puja pooja samagri idol murti rudraksh agarbatti diya temple"
+ },
+ {
+  "id": "ecommerce.pet_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Pet products",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "pet dog cat food accessories aquarium fish"
+ },
+ {
+  "id": "ecommerce.sports_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Sports products",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "sports cricket bat ball gym equipment yoga mat"
+ },
+ {
+  "id": "ecommerce.arts_and_collectibles",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Arts and collectibles",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "painting art handicraft handmade craft resin candles macrame pottery terracotta madhubani"
+ },
+ {
+  "id": "ecommerce.sexual_wellness_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Sexual wellness products",
+  "status": "not_supported",
+  "reason": "Terms §17: adult goods and services",
+  "keywords": "adult sex toys condoms lingerie intimate"
+ },
+ {
+  "id": "ecommerce.drop_shipping",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Drop shipping",
+  "status": "not_supported",
+  "reason": "Terms §17: drop-shipped merchandise",
+  "keywords": "dropshipping drop shipping aliexpress supplier ships directly"
+ },
+ {
+  "id": "ecommerce.crypto_machinery",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Crypto machinery",
+  "status": "not_supported",
+  "reason": "Terms §17: crypto products",
+  "keywords": "mining rig crypto miner"
+ },
+ {
+  "id": "ecommerce.tobacco",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Tobacco",
+  "status": "not_supported",
+  "reason": "Terms §17: tobacco, cigarettes and related products",
+  "keywords": "cigarette tobacco gutka vape e-cigarette hookah beedi"
+ },
+ {
+  "id": "ecommerce.weapons_and_ammunitions",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Weapons and ammunitions",
+  "status": "not_supported",
+  "reason": "Terms §17: firearms, ammunition, knives, armaments",
+  "keywords": "knife gun airgun ammunition pepper spray"
+ },
+ {
+  "id": "ecommerce.stamps_and_coins_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Stamps and coins stores",
+  "status": "needs_review",
+  "reason": "Counterfeit risk; stock provenance checked"
+ },
+ {
+  "id": "ecommerce.office_equipment",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Office equipment",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.automobile_parts_and_equipements",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Automobile parts and equipment",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "car bike spare parts auto parts accessories"
+ },
+ {
+  "id": "ecommerce.garden_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Garden supply stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "plants nursery gamla pots gardening seeds"
+ },
+ {
+  "id": "ecommerce.household_appliance_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Household appliance stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.non_durable_goods",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Non durable goods",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.pawn_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Pawn shops",
+  "status": "not_supported",
+  "reason": "Terms §17: businesses in legally ambiguous scope; regulated goods"
+ },
+ {
+  "id": "ecommerce.electrical_parts_and_equipment",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Electrical parts and equipment",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.wig_and_toupee_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Wig and toupee shops",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.gift_novelty_and_souvenir_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Gift novelty and souvenir shops",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.duty_free_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Duty free stores",
+  "status": "not_supported",
+  "reason": "Terms §17: alcohol/tobacco; regulated goods"
+ },
+ {
+  "id": "ecommerce.office_and_commercial_furniture",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Office and commercial furniture",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.dry_goods",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Dry goods",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.books_and_publications",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Books and publications",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.camera_and_photographic_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Camera and photographic stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "camera lens photography equipment"
+ },
+ {
+  "id": "ecommerce.record_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Record shops",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.meat_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Meat supply stores",
+  "status": "needs_review",
+  "reason": "FSSAI licence and live-animal rules checked",
+  "keywords": "meat chicken mutton fish eggs non veg"
+ },
+ {
+  "id": "ecommerce.leather_goods_and_luggage",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Leather goods and luggage",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "bags purse wallet belt leather luggage"
+ },
+ {
+  "id": "ecommerce.snowmobile_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Snowmobile dealers",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.men_and_boys_clothing_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Men and boys clothing stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "shirt tshirt jeans kurta pajama men gents boys garments"
+ },
+ {
+  "id": "ecommerce.paint_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Paint supply stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.automotive_parts",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Automotive parts",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.jewellery_and_watch_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Jewellery and watch stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "jewellery jewelry gold silver chandi sona haar necklace earrings jhumka bangles kangan ring mangalsutra artificial imitation oxidised beads watch ghadi"
+ },
+ {
+  "id": "ecommerce.auto_store_home_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Auto store home supply stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.tent_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Tent stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.shoe_stores_retail",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Shoe stores retail",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "shoes chappal sandal juti jooti footwear sneakers"
+ },
+ {
+  "id": "ecommerce.petroleum_and_petroleum_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Petroleum and petroleum products",
+  "status": "needs_review",
+  "reason": "Regulated goods; dealer licence checked"
+ },
+ {
+  "id": "ecommerce.department_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Department stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.automotive_tire_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Automotive tire stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.sport_apparel_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Sport apparel stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.variety_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Variety stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.chemicals_and_allied_products",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Chemicals and allied products",
+  "status": "needs_review",
+  "reason": "Hazardous materials are prohibited; product list checked"
+ },
+ {
+  "id": "ecommerce.commercial_equipments",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Commercial equipments",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.fireplace_parts_and_accessories",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Fireplace parts and accessories",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.family_clothing_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Family clothing stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.fabric_and_sewing_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Fabric and sewing stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "fabric cloth kapda thaan sewing tailoring material"
+ },
+ {
+  "id": "ecommerce.home_supply_warehouse",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Home supply warehouse",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.art_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Art supply stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.camper_recreational_and_utility_trailer_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Camper recreational and utility trailer dealers",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.clocks_and_silverware_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Clocks and silverware stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.discount_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Discount stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.school_supplies_and_stationery",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "School supplies and stationery",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "stationery pen notebook copy school supplies"
+ },
+ {
+  "id": "ecommerce.second_hand_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Second hand stores",
+  "status": "needs_review",
+  "reason": "Provenance checked",
+  "keywords": "second hand used purana old refurbished thrift"
+ },
+ {
+  "id": "ecommerce.watch_and_jewellery_repair_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Watch and jewellery repair stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.liquor_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Liquor stores",
+  "status": "not_supported",
+  "reason": "Terms §17: alcohol and alcoholic beverages",
+  "keywords": "wine beer whisky daru sharab liquor"
+ },
+ {
+  "id": "ecommerce.boat_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Boat dealers",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.opticians_optical_goods_and_eyeglasse_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Opticians optical goods and eyeglass stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.wholesale_footwear_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Wholesale footwear stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.cosmetic_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Cosmetic stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "cosmetics makeup lipstick beauty products skincare mehndi henna nail"
+ },
+ {
+  "id": "ecommerce.home_furnishing_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Home furnishing stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "home decor cushion bedsheet curtain rug carpet wall hanging"
+ },
+ {
+  "id": "ecommerce.antique_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Antique stores",
+  "status": "needs_review",
+  "reason": "Provenance and endangered-species rules checked"
+ },
+ {
+  "id": "ecommerce.plumbing_and_heating_equipment",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Plumbing and heating equipment",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.telecommunication_equipment_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Telecommunication equipment stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "mobile phone accessories cover charger earphones"
+ },
+ {
+  "id": "ecommerce.women_clothing",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Women clothing",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "kurti saree sari lehenga suit salwar dupatta ladies women garments boutique"
+ },
+ {
+  "id": "ecommerce.florists",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Florists",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "flowers phool bouquet"
+ },
+ {
+  "id": "ecommerce.computer_software_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Computer software stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.building_matrial_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Building material stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "cement bricks sand tiles building material"
+ },
+ {
+  "id": "ecommerce.candy_nut_confectionery_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Candy nut confectionery shops",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "chocolates candy toffee sweets mithai dry fruits"
+ },
+ {
+  "id": "ecommerce.glass_and_wallpaper_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Glass and wallpaper stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.commercial_photography_and_graphic_design_services",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Commercial photography and graphic design services",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.video_game_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Video game supply stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.fuel_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Fuel dealers",
+  "status": "needs_review",
+  "reason": "Regulated goods; dealer licence checked"
+ },
+ {
+  "id": "ecommerce.drapery_and_window_coverings_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Drapery and window coverings stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.hearing_aids_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Hearing aids stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.automotive_paint_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Automotive paint shops",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.durable_goods_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Durable goods stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.uniforms_and_commercial_clothing_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Uniforms and commercial clothing stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.fur_shops",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Fur shops",
+  "status": "not_supported",
+  "reason": "Terms §17: hides, skins and other animal parts"
+ },
+ {
+  "id": "ecommerce.industrial_supplies",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Industrial supplies",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "industrial machinery spare parts factory"
+ },
+ {
+  "id": "ecommerce.bicycle_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Bicycle stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "cycle bicycle"
+ },
+ {
+  "id": "ecommerce.motorcycle_shops_and_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Motorcycle shops and dealers",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.children_and_infants_wear_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Children and infants wear stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "kids baby bachon ke kapde frock"
+ },
+ {
+  "id": "ecommerce.women_accessory_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Women accessory stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "accessories bags clips hair accessories scrunchies"
+ },
+ {
+  "id": "ecommerce.construction_materials",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Construction materials",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.books_periodicals_and_newspaper",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Books periodicals and newspaper",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.floor_covering_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Floor covering stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.crystal_and_glassware_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Crystal and glassware stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.accessory_and_apparel_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Accessory and apparel stores",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.hardware_equipment_and_supply_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Hardware equipment and supply stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "hardware tools drill nuts bolts paint plumbing sanitary"
+ },
+ {
+  "id": "ecommerce.computers_peripheral_equipment_software",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Computers peripheral equipment software",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "laptop computer keyboard mouse refurbished"
+ },
+ {
+  "id": "ecommerce.automobile_and_truck_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Automobile and truck dealers",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.aircraft_and_farm_equipment_dealers",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Aircraft and farm equipment dealers",
+  "status": "supported",
+  "resellerDoc": true
+ },
+ {
+  "id": "ecommerce.antique_shops_sales_and_repairs",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Antique shops sales and repairs",
+  "status": "needs_review",
+  "reason": "Provenance and endangered-species rules checked"
+ },
+ {
+  "id": "ecommerce.music_stores",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Music stores",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "guitar tabla harmonium musical instruments"
+ },
+ {
+  "id": "ecommerce.furniture_and_home_furnishing_store",
+  "category": "ecommerce",
+  "categoryLabel": "E-commerce & retail",
+  "label": "Furniture and home furnishing store",
+  "status": "supported",
+  "resellerDoc": true,
+  "keywords": "furniture sofa bed table chair almirah wooden"
+ },
+ {
+  "id": "services.repair_and_cleaning",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Repair and cleaning",
+  "status": "supported",
+  "keywords": "repair cleaning service plumber electrician"
+ },
+ {
+  "id": "services.interior_design_and_architect",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Interior design and architect",
+  "status": "supported",
+  "keywords": "interior design architect"
+ },
+ {
+  "id": "services.movers_and_packers",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Movers and packers",
+  "status": "supported",
+  "keywords": "packers movers shifting"
+ },
+ {
+  "id": "services.legal",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Legal",
+  "status": "supported",
+  "keywords": "lawyer advocate legal vakil"
+ },
+ {
+  "id": "services.event_planning",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Event planning",
+  "status": "supported",
+  "keywords": "event planner wedding shaadi decoration dj"
+ },
+ {
+  "id": "services.service_centre",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Service centre",
+  "status": "supported"
+ },
+ {
+  "id": "services.consulting",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Consulting",
+  "status": "supported",
+  "keywords": "consulting consultant advice strategy"
+ },
+ {
+  "id": "services.ad_and_marketing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Ad and marketing",
+  "status": "supported",
+  "keywords": "digital marketing social media management ads agency instagram growth"
+ },
+ {
+  "id": "services.services_classifieds",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Services classifieds",
+  "status": "supported"
+ },
+ {
+  "id": "services.multi_level_marketing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Multi level marketing",
+  "status": "not_supported",
+  "reason": "Terms §17: multi-level marketing collection fees, matrix schemes",
+  "keywords": "mlm network marketing downline referral income join under me"
+ },
+ {
+  "id": "services.construction_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Construction services",
+  "status": "supported"
+ },
+ {
+  "id": "services.architectural_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Architectural services",
+  "status": "supported"
+ },
+ {
+  "id": "services.car_washes",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Car washes",
+  "status": "supported",
+  "keywords": "car wash detailing"
+ },
+ {
+  "id": "services.motor_home_rentals",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Motor home rentals",
+  "status": "supported"
+ },
+ {
+  "id": "services.stenographic_and_secretarial_support_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Stenographic and secretarial support services",
+  "status": "supported"
+ },
+ {
+  "id": "services.chiropractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Chiropractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.automotive_service_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Automotive service shops",
+  "status": "supported",
+  "keywords": "car service garage mechanic bike service"
+ },
+ {
+  "id": "services.shoe_repair_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Shoe repair shops",
+  "status": "supported"
+ },
+ {
+  "id": "services.telecommunication_service",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Telecommunication service",
+  "status": "needs_review",
+  "reason": "TRAI licensing checked"
+ },
+ {
+  "id": "services.fines",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Fines",
+  "status": "needs_review",
+  "reason": "Collection on behalf of an authority checked",
+  "keywords": "challan fine penalty"
+ },
+ {
+  "id": "services.security_agencies",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Security agencies",
+  "status": "needs_review",
+  "reason": "PSARA licence checked",
+  "extraDocs": [
+   "PSARA licence"
+  ],
+  "keywords": "security guards agency"
+ },
+ {
+  "id": "services.tailors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Tailors",
+  "status": "supported",
+  "keywords": "tailor darzi stitching silai boutique alteration"
+ },
+ {
+  "id": "services.type_setting_and_engraving_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Type setting and engraving services",
+  "status": "supported"
+ },
+ {
+  "id": "services.small_appliance_repair_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Small appliance repair shops",
+  "status": "supported"
+ },
+ {
+  "id": "services.photography_labs",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Photography labs",
+  "status": "supported"
+ },
+ {
+  "id": "services.dry_cleaners",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Dry cleaners",
+  "status": "supported",
+  "keywords": "dry clean"
+ },
+ {
+  "id": "services.massage_parlors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Massage parlors",
+  "status": "not_supported",
+  "reason": "Terms §17: services prone to buy-and-deny chargebacks (adult-adjacent)",
+  "keywords": "massage spa body massage"
+ },
+ {
+  "id": "services.electronic_repair_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Electronic repair shops",
+  "status": "supported",
+  "keywords": "mobile repair laptop repair phone repair"
+ },
+ {
+  "id": "services.cleaning_and_sanitation_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Cleaning and sanitation services",
+  "status": "supported",
+  "keywords": "housekeeping cleaning pest control"
+ },
+ {
+  "id": "services.nursing_care_facilities",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Nursing care facilities",
+  "status": "needs_review",
+  "reason": "Healthcare licensing checked"
+ },
+ {
+  "id": "services.direct_marketing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Direct marketing",
+  "status": "needs_review",
+  "reason": "Direct-marketing and subscription models checked"
+ },
+ {
+  "id": "services.lottery",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Lottery",
+  "status": "not_supported",
+  "reason": "Terms §17: lotteries, sweepstakes and games of chance",
+  "keywords": "lottery lucky draw"
+ },
+ {
+  "id": "services.veterinary_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Veterinary services",
+  "status": "supported",
+  "keywords": "vet veterinary pet doctor"
+ },
+ {
+  "id": "services.affliated_auto_rental",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Affiliated auto rental",
+  "status": "supported"
+ },
+ {
+  "id": "services.alimony_and_child_support",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Alimony and child support",
+  "status": "needs_review",
+  "reason": "Court-related payments checked"
+ },
+ {
+  "id": "services.airport_flying_fields",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Airport flying fields",
+  "status": "supported"
+ },
+ {
+  "id": "services.golf_courses",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Golf courses",
+  "status": "supported"
+ },
+ {
+  "id": "services.tire_retreading_and_repair_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Tire retreading and repair shops",
+  "status": "supported"
+ },
+ {
+  "id": "services.television_cable_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Television cable services",
+  "status": "needs_review",
+  "reason": "Licensing checked"
+ },
+ {
+  "id": "services.recreational_and_sporting_camps",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Recreational and sporting camps",
+  "status": "supported"
+ },
+ {
+  "id": "services.barber_and_beauty_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Barber and beauty shops",
+  "status": "supported",
+  "keywords": "salon parlour parlor beauty makeup artist mehndi bridal hair"
+ },
+ {
+  "id": "services.agricultural_cooperatives",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Agricultural cooperatives",
+  "status": "supported"
+ },
+ {
+  "id": "services.carpentry_contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Carpentry contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.wrecking_and_salvaging_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Wrecking and salvaging services",
+  "status": "needs_review",
+  "reason": "Regulated goods checked"
+ },
+ {
+  "id": "services.automobile_towing_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Automobile towing services",
+  "status": "supported"
+ },
+ {
+  "id": "services.video_tape_rental_stores",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Video tape rental stores",
+  "status": "supported"
+ },
+ {
+  "id": "services.miscellaneous_repair_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Miscellaneous repair shops",
+  "status": "supported"
+ },
+ {
+  "id": "services.motor_homes_and_parts",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Motor homes and parts",
+  "status": "supported"
+ },
+ {
+  "id": "services.horse_or_dog_racing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Horse or dog racing",
+  "status": "not_supported",
+  "reason": "Terms §17: betting and games of chance"
+ },
+ {
+  "id": "services.laundry_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Laundry services",
+  "status": "supported",
+  "keywords": "laundry dhobi ironing press"
+ },
+ {
+  "id": "services.electrical_contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Electrical contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.debt_marriage_personal_counseling_service",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Debt marriage personal counseling service",
+  "status": "needs_review",
+  "reason": "Counselling and debt services checked",
+  "keywords": "counselling counseling astrology astrologer jyotish kundli horoscope tarot vastu numerology pandit puja online"
+ },
+ {
+  "id": "services.air_conditioning_and_refrigeration_repair_shops",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Air conditioning and refrigeration repair shops",
+  "status": "supported"
+ },
+ {
+  "id": "services.credit_reporting_agencies",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Credit reporting agencies",
+  "status": "not_supported",
+  "reason": "Terms §17: regulated / legally ambiguous scope"
+ },
+ {
+  "id": "services.heating_and_plumbing_contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Heating and plumbing contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.carpet_and_upholstery_cleaning_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Carpet and upholstery cleaning services",
+  "status": "supported"
+ },
+ {
+  "id": "services.swimming_pools",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Swimming pools",
+  "status": "supported"
+ },
+ {
+  "id": "services.roofing_and_metal_work_contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Roofing and metal work contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.internet_service_providers",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Internet service providers",
+  "status": "needs_review",
+  "reason": "DoT licensing checked"
+ },
+ {
+  "id": "services.recreational_camps",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Recreational camps",
+  "status": "supported"
+ },
+ {
+  "id": "services.masonry_contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Masonry contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.exterminating_and_disinfecting_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Exterminating and disinfecting services",
+  "status": "supported"
+ },
+ {
+  "id": "services.ambulance_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Ambulance services",
+  "status": "needs_review",
+  "reason": "Healthcare licensing checked"
+ },
+ {
+  "id": "services.funeral_services_and_crematories",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Funeral services and crematories",
+  "status": "supported"
+ },
+ {
+  "id": "services.metal_service_centres",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Metal service centres",
+  "status": "supported"
+ },
+ {
+  "id": "services.copying_and_blueprinting_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Copying and blueprinting services",
+  "status": "supported"
+ },
+ {
+  "id": "services.fuel_dispensers",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Fuel dispensers",
+  "status": "supported"
+ },
+ {
+  "id": "services.welding_repair",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Welding repair",
+  "status": "supported"
+ },
+ {
+  "id": "services.mobile_home_dealers",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Mobile home dealers",
+  "status": "supported"
+ },
+ {
+  "id": "services.concrete_work_contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Concrete work contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.boat_rentals",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Boat rentals",
+  "status": "supported"
+ },
+ {
+  "id": "services.personal_shoppers_and_shopping_clubs",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Personal shoppers and shopping clubs",
+  "status": "needs_review",
+  "reason": "Membership-club models checked"
+ },
+ {
+  "id": "services.door_to_door_sales",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Door to door sales",
+  "status": "not_supported",
+  "reason": "Terms §17: work-at-home / door-to-door schemes with potential to deceive"
+ },
+ {
+  "id": "services.travel_related_direct_marketing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Travel related direct marketing",
+  "status": "needs_review",
+  "reason": "Timeshare and travel-club models checked"
+ },
+ {
+  "id": "services.lottery_and_betting",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Lottery and betting",
+  "status": "not_supported",
+  "reason": "Terms §17: lotteries and betting",
+  "keywords": "betting satta matka"
+ },
+ {
+  "id": "services.bands_orchestras_and_miscellaneous_entertainers",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Bands orchestras and miscellaneous entertainers",
+  "status": "supported"
+ },
+ {
+  "id": "services.furniture_repair_and_refinishing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Furniture repair and refinishing",
+  "status": "supported"
+ },
+ {
+  "id": "services.contractors",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Contractors",
+  "status": "supported"
+ },
+ {
+  "id": "services.direct_marketing_and_subscription_merchants",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Direct marketing and subscription merchants",
+  "status": "needs_review",
+  "reason": "Subscription billing model checked",
+  "keywords": "subscription monthly plan membership"
+ },
+ {
+  "id": "services.typewriter_stores_sales_service_and_rentals",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Typewriter stores sales service and rentals",
+  "status": "supported"
+ },
+ {
+  "id": "services.recreation_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Recreation services",
+  "status": "supported"
+ },
+ {
+  "id": "services.direct_marketing_insurance_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Direct marketing insurance services",
+  "status": "needs_review",
+  "reason": "Insurance distribution needs IRDAI licence"
+ },
+ {
+  "id": "services.business_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Business services",
+  "status": "supported",
+  "keywords": "business services bpo outsourcing"
+ },
+ {
+  "id": "services.inbound_telemarketing_merchants",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Inbound telemarketing merchants",
+  "status": "needs_review",
+  "reason": "TRAI rules checked"
+ },
+ {
+  "id": "services.public_warehousing",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Public warehousing",
+  "status": "supported"
+ },
+ {
+  "id": "services.outbound_telemarketing_merchants",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Outbound telemarketing merchants",
+  "status": "not_supported",
+  "reason": "Terms §17: database providers for tele-callers; TRAI-prohibited activities"
+ },
+ {
+  "id": "services.clothing_rental_stores",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Clothing rental stores",
+  "status": "supported"
+ },
+ {
+  "id": "services.transportation_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Transportation services",
+  "status": "supported",
+  "keywords": "transport tempo truck"
+ },
+ {
+  "id": "services.electric_razor_stores",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Electric razor stores",
+  "status": "supported"
+ },
+ {
+  "id": "services.service_stations",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Service stations",
+  "status": "supported"
+ },
+ {
+  "id": "services.photographic_studio",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Photographic studio",
+  "status": "supported",
+  "keywords": "photographer photography studio wedding shoot videography"
+ },
+ {
+  "id": "services.professional_services",
+  "category": "services",
+  "categoryLabel": "Services",
+  "label": "Professional services",
+  "status": "supported",
+  "keywords": "freelance freelancer professional services ca lawyer"
+ },
+ {
+  "id": "housing.developer",
+  "category": "housing",
+  "categoryLabel": "Housing & real estate",
+  "label": "Developer",
+  "status": "needs_review",
+  "reason": "RERA registration checked",
+  "extraDocs": [
+   "RERA registration"
+  ],
+  "keywords": "builder flats plots real estate"
+ },
+ {
+  "id": "housing.facility_management",
+  "category": "housing",
+  "categoryLabel": "Housing & real estate",
+  "label": "Facility management",
+  "status": "supported"
+ },
+ {
+  "id": "housing.rwa",
+  "category": "housing",
+  "categoryLabel": "Housing & real estate",
+  "label": "Resident welfare association (RWA)",
+  "status": "supported",
+  "keywords": "society maintenance rwa apartment"
+ },
+ {
+  "id": "housing.coworking",
+  "category": "housing",
+  "categoryLabel": "Housing & real estate",
+  "label": "Coworking",
+  "status": "supported",
+  "keywords": "coworking office space"
+ },
+ {
+  "id": "housing.realestate_classifieds",
+  "category": "housing",
+  "categoryLabel": "Housing & real estate",
+  "label": "Realestate classifieds",
+  "status": "needs_review",
+  "reason": "Listing model checked"
+ },
+ {
+  "id": "housing.space_rental",
+  "category": "housing",
+  "categoryLabel": "Housing & real estate",
+  "label": "Space rental",
+  "status": "supported",
+  "keywords": "pg hostel room rent rental"
+ },
+ {
+  "id": "not_for_profit.charity",
+  "category": "not_for_profit",
+  "categoryLabel": "Not for profit",
+  "label": "Charity",
+  "status": "needs_review",
+  "reason": "12A/80G and FCRA checks by a reviewer; donations are handled as a separate model",
+  "extraDocs": [
+   "12A and 80G certificates",
+   "FCRA certificate if receiving foreign donations"
+  ],
+  "keywords": "ngo charity donation daan trust"
+ },
+ {
+  "id": "not_for_profit.educational",
+  "category": "not_for_profit",
+  "categoryLabel": "Not for profit",
+  "label": "Educational",
+  "status": "needs_review",
+  "reason": "12A/80G and FCRA checks by a reviewer; donations are handled as a separate model",
+  "extraDocs": [
+   "12A and 80G certificates",
+   "FCRA certificate if receiving foreign donations"
+  ]
+ },
+ {
+  "id": "not_for_profit.religious",
+  "category": "not_for_profit",
+  "categoryLabel": "Not for profit",
+  "label": "Religious",
+  "status": "needs_review",
+  "reason": "12A/80G and FCRA checks by a reviewer; donations are handled as a separate model",
+  "extraDocs": [
+   "12A and 80G certificates",
+   "FCRA certificate if receiving foreign donations"
+  ],
+  "keywords": "temple mandir masjid church trust donation"
+ },
+ {
+  "id": "not_for_profit.personal",
+  "category": "not_for_profit",
+  "categoryLabel": "Not for profit",
+  "label": "Personal",
+  "status": "needs_review",
+  "reason": "12A/80G and FCRA checks by a reviewer; donations are handled as a separate model",
+  "extraDocs": [
+   "12A and 80G certificates",
+   "FCRA certificate if receiving foreign donations"
+  ]
+ },
+ {
+  "id": "social.matchmaking",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Matchmaking",
+  "status": "needs_review",
+  "reason": "Terms §17 lists online matchmaking as legally ambiguous; reviewer decides",
+  "keywords": "matrimony rishta matchmaking dating"
+ },
+ {
+  "id": "social.social_network",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Social network",
+  "status": "supported"
+ },
+ {
+  "id": "social.messaging",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Messaging",
+  "status": "supported"
+ },
+ {
+  "id": "social.professional_network",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Professional network",
+  "status": "supported"
+ },
+ {
+  "id": "social.neighbourhood_network",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Neighbourhood network",
+  "status": "supported"
+ },
+ {
+  "id": "social.political_organizations",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Political organizations",
+  "status": "needs_review",
+  "reason": "Political funding rules checked"
+ },
+ {
+  "id": "social.automobile_associations_and_clubs",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Automobile associations and clubs",
+  "status": "supported"
+ },
+ {
+  "id": "social.country_and_athletic_clubs",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Country and athletic clubs",
+  "status": "supported"
+ },
+ {
+  "id": "social.associations_and_membership",
+  "category": "social",
+  "categoryLabel": "Social & community",
+  "label": "Associations and membership",
+  "status": "supported",
+  "keywords": "club membership association society"
+ },
+ {
+  "id": "media_and_entertainment.video_on_demand",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Video on demand",
+  "status": "needs_review",
+  "reason": "Content and mature-material rules checked",
+  "keywords": "ott videos streaming"
+ },
+ {
+  "id": "media_and_entertainment.music_streaming",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Music streaming",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.multiplex",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Multiplex",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.content_and_publishing",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Content and publishing",
+  "status": "needs_review",
+  "reason": "Content rules checked",
+  "keywords": "youtube content creator blog podcast newsletter ebook"
+ },
+ {
+  "id": "media_and_entertainment.ticketing",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Ticketing",
+  "status": "supported",
+  "keywords": "tickets event passes show"
+ },
+ {
+  "id": "media_and_entertainment.news",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "News",
+  "status": "needs_review",
+  "reason": "Content rules checked"
+ },
+ {
+  "id": "media_and_entertainment.video_game_arcades",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Video game arcades",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.video_tape_production_and_distribution",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Video tape production and distribution",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.bowling_alleys",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Bowling alleys",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.billiard_and_pool_establishments",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Billiard and pool establishments",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.amusement_parks_and_circuses",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Amusement parks and circuses",
+  "status": "supported"
+ },
+ {
+  "id": "media_and_entertainment.ticket_agencies",
+  "category": "media_and_entertainment",
+  "categoryLabel": "Media & entertainment",
+  "label": "Ticket agencies",
+  "status": "supported"
+ },
+ {
+  "id": "gaming.game_developer",
+  "category": "gaming",
+  "categoryLabel": "Gaming",
+  "label": "Game developer",
+  "status": "supported",
+  "keywords": "game developer indie game"
+ },
+ {
+  "id": "gaming.esports",
+  "category": "gaming",
+  "categoryLabel": "Gaming",
+  "label": "Esports",
+  "status": "needs_review",
+  "reason": "Prize-money models checked",
+  "keywords": "esports tournament bgmi free fire entry fee prize"
+ },
+ {
+  "id": "gaming.online_casino",
+  "category": "gaming",
+  "categoryLabel": "Gaming",
+  "label": "Online casino",
+  "status": "not_supported",
+  "reason": "Terms §17: online gambling",
+  "keywords": "casino rummy poker teen patti real money"
+ },
+ {
+  "id": "gaming.fantasy_sports",
+  "category": "gaming",
+  "categoryLabel": "Gaming",
+  "label": "Fantasy sports",
+  "status": "needs_review",
+  "reason": "Real-money fantasy is reviewed state by state",
+  "keywords": "fantasy cricket fantasy sports dream11 style"
+ },
+ {
+  "id": "gaming.gaming_marketplace",
+  "category": "gaming",
+  "categoryLabel": "Gaming",
+  "label": "Gaming marketplace",
+  "status": "needs_review",
+  "reason": "In-game credits that can be monetised are restricted; model checked",
+  "keywords": "game credits skins top up"
+ },
+ {
+  "id": "it_and_software.saas",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "SaaS",
+  "status": "supported",
+  "keywords": "saas software subscription app startup tool"
+ },
+ {
+  "id": "it_and_software.paas",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "PaaS",
+  "status": "supported"
+ },
+ {
+  "id": "it_and_software.iaas",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "IaaS",
+  "status": "supported"
+ },
+ {
+  "id": "it_and_software.consulting_and_outsourcing",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "Consulting and outsourcing",
+  "status": "supported",
+  "keywords": "it services software consulting"
+ },
+ {
+  "id": "it_and_software.web_development",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "Web development",
+  "status": "supported",
+  "keywords": "website development web developer app development coding"
+ },
+ {
+  "id": "it_and_software.technical_support",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "Technical support",
+  "status": "supported",
+  "keywords": "tech support"
+ },
+ {
+  "id": "it_and_software.data_processing",
+  "category": "it_and_software",
+  "categoryLabel": "IT & software",
+  "label": "Data processing",
+  "status": "supported"
+ },
+ {
+  "id": "food.online_food_ordering",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Online food ordering",
+  "status": "supported",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ],
+  "keywords": "tiffin dabba home food homemade achaar pickle papad masala ladoo mithai sweets snacks namkeen cloud kitchen delivery"
+ },
+ {
+  "id": "food.restaurant",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Restaurant",
+  "status": "supported",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ],
+  "keywords": "restaurant dhaba cafe hotel khana canteen"
+ },
+ {
+  "id": "food.food_court",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Food court",
+  "status": "supported",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ]
+ },
+ {
+  "id": "food.catering",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Catering",
+  "status": "supported",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ],
+  "keywords": "catering caterer shaadi party bulk orders"
+ },
+ {
+  "id": "food.alcohol",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Alcohol",
+  "status": "not_supported",
+  "reason": "Terms §17: alcohol and alcoholic beverages",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ],
+  "keywords": "beer wine liquor bar sharab daru"
+ },
+ {
+  "id": "food.restaurant_search_and_booking",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Restaurant search and booking",
+  "status": "supported",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ]
+ },
+ {
+  "id": "food.dairy_products",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Dairy products",
+  "status": "needs_review",
+  "reason": "FSSAI licence checked",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ],
+  "keywords": "milk doodh paneer ghee curd dahi dairy"
+ },
+ {
+  "id": "food.bakeries",
+  "category": "food",
+  "categoryLabel": "Food & beverages",
+  "label": "Bakeries",
+  "status": "supported",
+  "extraDocs": [
+   "FSSAI registration or licence"
+  ],
+  "keywords": "cake cakes cookies bakery bake biscuits brownies cupcakes homemade ghar ka"
+ },
+ {
+  "id": "utilities.electricity",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Electricity",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.gas",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Gas",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.telecom",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Telecom",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.water",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Water",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.cable",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Cable",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.broadband",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Broadband",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.dth",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "DTH",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.internet_provider",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Internet provider",
+  "status": "supported"
+ },
+ {
+  "id": "utilities.bill_and_recharge_aggregators",
+  "category": "utilities",
+  "categoryLabel": "Utilities",
+  "label": "Bill and recharge aggregators",
+  "status": "needs_review",
+  "reason": "Aggregator model checked",
+  "keywords": "recharge bill payment"
+ },
+ {
+  "id": "government.central",
+  "category": "government",
+  "categoryLabel": "Government",
+  "label": "Central",
+  "status": "needs_review",
+  "reason": "Government entity documents checked"
+ },
+ {
+  "id": "government.state",
+  "category": "government",
+  "categoryLabel": "Government",
+  "label": "State",
+  "status": "needs_review",
+  "reason": "Government entity documents checked"
+ },
+ {
+  "id": "government.intra_government_purchases",
+  "category": "government",
+  "categoryLabel": "Government",
+  "label": "Intra government purchases",
+  "status": "needs_review",
+  "reason": "Government entity documents checked"
+ },
+ {
+  "id": "government.goverment_postal_services",
+  "category": "government",
+  "categoryLabel": "Government",
+  "label": "Government postal services",
+  "status": "needs_review",
+  "reason": "Government entity documents checked"
+ },
+ {
+  "id": "logistics.freight",
+  "category": "logistics",
+  "categoryLabel": "Logistics",
+  "label": "Freight",
+  "status": "supported",
+  "extraDocs": [
+   "Transport / GST registration"
+  ]
+ },
+ {
+  "id": "logistics.courier",
+  "category": "logistics",
+  "categoryLabel": "Logistics",
+  "label": "Courier",
+  "status": "supported",
+  "extraDocs": [
+   "Transport / GST registration"
+  ],
+  "keywords": "courier parcel delivery"
+ },
+ {
+  "id": "logistics.warehousing",
+  "category": "logistics",
+  "categoryLabel": "Logistics",
+  "label": "Warehousing",
+  "status": "supported",
+  "extraDocs": [
+   "Transport / GST registration"
+  ]
+ },
+ {
+  "id": "logistics.distribution",
+  "category": "logistics",
+  "categoryLabel": "Logistics",
+  "label": "Distribution",
+  "status": "supported",
+  "extraDocs": [
+   "Transport / GST registration"
+  ]
+ },
+ {
+  "id": "logistics.end_to_end_logistics",
+  "category": "logistics",
+  "categoryLabel": "Logistics",
+  "label": "End to end logistics",
+  "status": "supported",
+  "extraDocs": [
+   "Transport / GST registration"
+  ]
+ },
+ {
+  "id": "logistics.courier_services",
+  "category": "logistics",
+  "categoryLabel": "Logistics",
+  "label": "Courier services",
+  "status": "supported",
+  "extraDocs": [
+   "Transport / GST registration"
+  ]
+ },
+ {
+  "id": "tours_and_travel.aviation",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Aviation",
+  "status": "supported"
+ },
+ {
+  "id": "tours_and_travel.accommodation",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Accommodation",
+  "status": "supported",
+  "keywords": "homestay hotel resort guest house"
+ },
+ {
+  "id": "tours_and_travel.ota",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Online travel agency",
+  "status": "needs_review",
+  "reason": "Agent-model and IATA status checked"
+ },
+ {
+  "id": "tours_and_travel.travel_agency",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Travel agency",
+  "status": "needs_review",
+  "reason": "Advance-collection risk; cancellation terms checked",
+  "extraDocs": [
+   "IATA / Ministry of Tourism recognition if any"
+  ],
+  "keywords": "travel agent tour package trip holiday"
+ },
+ {
+  "id": "tours_and_travel.tourist_attractions_and_exhibits",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Tourist attractions and exhibits",
+  "status": "supported"
+ },
+ {
+  "id": "tours_and_travel.timeshares",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Timeshares",
+  "status": "needs_review",
+  "reason": "Timeshare models checked"
+ },
+ {
+  "id": "tours_and_travel.aquariums_dolphinariums_and_seaquariums",
+  "category": "tours_and_travel",
+  "categoryLabel": "Tours & travel",
+  "label": "Aquariums dolphinariums and seaquariums",
+  "status": "supported"
+ },
+ {
+  "id": "transport.cab_hailing",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Cab hailing",
+  "status": "supported",
+  "keywords": "cab taxi"
+ },
+ {
+  "id": "transport.bus",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Bus",
+  "status": "supported"
+ },
+ {
+  "id": "transport.train_and_metro",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Train and metro",
+  "status": "supported"
+ },
+ {
+  "id": "transport.automobile_rentals",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Automobile rentals",
+  "status": "supported",
+  "keywords": "car rental bike rental self drive"
+ },
+ {
+  "id": "transport.cruise_lines",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Cruise lines",
+  "status": "needs_review",
+  "reason": "Advance-collection risk checked"
+ },
+ {
+  "id": "transport.parking_lots_and_garages",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Parking lots and garages",
+  "status": "supported"
+ },
+ {
+  "id": "transport.transportation",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Transportation",
+  "status": "supported"
+ },
+ {
+  "id": "transport.bridge_and_road_tolls",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Bridge and road tolls",
+  "status": "supported"
+ },
+ {
+  "id": "transport.freight_transport",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Freight transport",
+  "status": "supported"
+ },
+ {
+  "id": "transport.truck_and_utility_trailer_rentals",
+  "category": "transport",
+  "categoryLabel": "Transport",
+  "label": "Truck and utility trailer rentals",
+  "status": "supported"
+ },
+ {
+  "id": "others.others",
+  "category": "others",
+  "categoryLabel": "Other",
+  "label": "Something else",
+  "status": "needs_review",
+  "reason": "Not in the standard list; a reviewer reads the description",
+  "keywords": "other something else"
+ }
+]

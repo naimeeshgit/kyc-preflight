@@ -1,5 +1,5 @@
 // Server-side helpers for the KYC Pre-flight API. The Anthropic key lives only here (Vercel env var).
-const POLICY = require("../../shared/policy.json");
+const POLICY = require("../../shared/taxonomy.json");
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-5-5";
 const API_URL = "https://api.anthropic.com/v1/messages";
@@ -7,31 +7,39 @@ const API_URL = "https://api.anthropic.com/v1/messages";
 const langName = (lang) =>
   lang === "hi" ? "Hinglish (Hindi written in Latin script, simple everyday words)" : "simple English";
 
-function classifyPrompt(text, lang) {
-  const table = POLICY.map((p) => `${p.id} | ${p.label} | ${p.status}`).join("\n");
+/**
+ * Classification prompt. The model chooses only among the retriever's candidates (plus
+ * "none_of_these"), so the taxonomy stays the source of truth and the UI can show what was
+ * considered. If the eligibility verdict depends on a fact the seller did not state, the model
+ * asks exactly one question instead of guessing.
+ */
+function classifyPrompt(text, lang, candidates, qa) {
+  const table = candidates.map((c) => `${c.id} | ${c.label} (${c.categoryLabel}) | ${c.status}${c.reason ? " — " + c.reason : ""}`).join("\n");
+  const prior = qa && qa.question ? `\nYOU ASKED EARLIER: "${qa.question}"\nSELLER ANSWERED: "${String(qa.answer || "").slice(0, 300)}"\n` : "";
   return `You are the classification step of "KYC Pre-flight", a check that runs inside a payment gateway's merchant app BEFORE a small, often unregistered seller pays a ₹199 KYC fee.
 
-Task: map the seller's own description (English, Hindi, Hinglish or Telugu) to exactly one policy_id from the table, and extract facts they stated.
+Task: map the seller's own description (English, Hindi, Hinglish or Telugu) to exactly one policy_id from the CANDIDATES, and extract facts they stated.
 
 Rules:
-- Choose policy_id only from the table. If nothing fits well, use "other".
-- The table's status column decides eligibility, not you. Your explanation must agree with that status.
+- Choose policy_id only from CANDIDATES. If none fits, use "none_of_these".
+- The status column decides eligibility, not you. Your explanation must agree with it.
 - If the status is not_supported, say so plainly and kindly. Never suggest how to re-describe or restructure the business to fit another category.
-- confidence is your confidence in the policy_id, from 0 to 1.
+- confidence is your confidence in the policy_id, from 0 to 1. Be honest: 0.9+ only when the description clearly names the business.
+- ASK ONE QUESTION when the choice between candidates with DIFFERENT statuses, or the verdict itself, depends on something the seller has not said (examples: real gold vs imitation; real-money vs free-to-play; selling own products vs reselling; fixed price vs pay-what-you-want; delivering now vs collecting advances). Put it in "question" (one short sentence, in the seller's language) and set confidence below 0.6. Otherwise "question" must be null. Never ask a second time if an answer is already given below.
 - Report only facts the seller stated or clearly implied. Use null when unknown.
-- is_reseller is true when they buy goods from others to sell.
-- The explanation covers only the category decision. Do not mention fees, payment, documents or next steps; the app shows those separately.
+- is_reseller is true when they buy finished goods from others to sell.
+- The explanation covers only the category decision. Do not mention fees, payment, documents or next steps.
 
-POLICY TABLE (policy_id | label | status):
+CANDIDATES (policy_id | label | status — note for reviewed/blocked):
 ${table}
+none_of_these | Nothing above fits | needs_review
 
 SELLER DESCRIPTION:
 """${String(text).slice(0, 1500)}"""
+${prior}
+Write "explanation" (2 short sentences), "question" and every "flags" text in ${langName(lang)}. Use plain words a first-time seller understands. Do not use jargon like MCC, CKYC or KYB. Flags are optional practical tips (at most 2).
 
-Write "explanation" (2 short sentences) and every "flags" text in ${langName(lang)}. Use plain words a first-time seller understands. Do not use jargon like MCC, CKYC or KYB. Flags are optional practical tips (at most 2).
-
-Answer by calling the report_category tool. Shape for reference:
-{"policy_id":"...","category_label":"...","sub_category":"...","confidence":0.0,"is_reseller":false,"has_gst":null,"has_website":null,"channels":["..."],"flags":[{"severity":"info","text":"..."}],"explanation":"..."}`;
+Answer by calling the report_category tool.`;
 }
 
 function namesPrompt(lang) {
@@ -63,16 +71,18 @@ function parseJson(text) {
 // Structured output: the model must answer by calling one tool whose input schema is the shape we need,
 // so the server always gets valid JSON instead of hoping free text parses.
 const SCHEMAS = {
-  classify: {
+  // classify's enum is built per request from the retriever's candidates: see classifySchema().
+  classify: (candidateIds) => ({
     name: "report_category",
     description: "Report the category decision for the seller's description.",
     input_schema: {
       type: "object",
       properties: {
-        policy_id: { type: "string", enum: POLICY.map((p) => p.id) },
+        policy_id: { type: "string", enum: [...candidateIds, "none_of_these"] },
         category_label: { type: "string" },
         sub_category: { type: "string" },
         confidence: { type: "number", minimum: 0, maximum: 1 },
+        question: { type: ["string", "null"], description: "One clarifying question, only when the verdict depends on an unstated fact. Otherwise null." },
         is_reseller: { type: ["boolean", "null"] },
         has_gst: { type: ["boolean", "null"] },
         has_website: { type: ["boolean", "null"] },
@@ -80,9 +90,9 @@ const SCHEMAS = {
         flags: { type: "array", maxItems: 2, items: { type: "object", properties: { severity: { type: "string", enum: ["info", "warn"] }, text: { type: "string" } }, required: ["severity", "text"] } },
         explanation: { type: "string" },
       },
-      required: ["policy_id", "category_label", "confidence", "explanation"],
+      required: ["policy_id", "category_label", "confidence", "question", "explanation"],
     },
-  },
+  }),
   names: {
     name: "report_names",
     description: "Report the names read from the documents and how each compares with the PAN name.",
@@ -98,10 +108,10 @@ const SCHEMAS = {
   },
 };
 
-async function callClaude(content, { maxTokens = 1024, schema } = {}) {
+async function callClaude(content, { maxTokens = 1024, schema, tool: toolOverride } = {}) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) { const e = new Error("ANTHROPIC_API_KEY is not set"); e.status = 503; throw e; }
-  const tool = schema ? SCHEMAS[schema] : null;
+  const tool = toolOverride || (schema ? SCHEMAS[schema] : null);
   const body = { model: MODEL, max_tokens: maxTokens, messages: [{ role: "user", content }] };
   if (tool) { body.tools = [tool]; body.tool_choice = { type: "tool", name: tool.name }; }
   const res = await fetch(API_URL, {
@@ -142,4 +152,4 @@ async function readBody(req) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
 }
 
-module.exports = { POLICY, MODEL, classifyPrompt, namesPrompt, callClaude, cors, readBody };
+module.exports = { POLICY, MODEL, SCHEMAS, classifyPrompt, namesPrompt, callClaude, cors, readBody };

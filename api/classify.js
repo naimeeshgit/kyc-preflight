@@ -1,5 +1,32 @@
-// POST /api/classify  { text, lang }  ->  { ai, model, ms }
-const { classifyPrompt, callClaude, cors, readBody, POLICY } = require("./_lib/claude");
+// POST /api/classify  { text, lang, qa?: {question, answer} }
+//   -> { ai, decision, candidates, model, ms }
+//
+// Pipeline: retrieve (BM25 over the 340-row taxonomy) -> LLM chooses among the candidates only
+// -> deterministic decision policy. The model reads; the rules decide.
+const { classifyPrompt, callClaude, cors, readBody, POLICY, SCHEMAS } = require("./_lib/claude");
+const { retrieve } = require("./_lib/retrieve");
+
+const K = 8;
+// Decision thresholds (documented in the build log; tuned on the eval set).
+const T_DECIDE = 0.6;   // below this we do not state a verdict
+const T_MIXED = 0.75;   // if candidates disagree on status, need this much to decide without asking
+
+function decide(ai, candidates, qa) {
+  const chosen = POLICY.find((p) => p.id === ai.policy_id) || null;
+  const statuses = new Set(candidates.slice(0, 3).map((c) => c.status));
+  const mixed = statuses.size > 1;
+  const conf = Number(ai.confidence) || 0;
+  const alreadyAsked = Boolean(qa && qa.question);
+
+  // 1. The model asked a question and we have not asked before: ask.
+  if (ai.question && !alreadyAsked && conf < T_DECIDE) return { state: "ask", question: ai.question };
+  // 2. Nothing fits, or confidence too low after any question: a human reviewer decides.
+  if (!chosen || ai.policy_id === "none_of_these" || conf < T_DECIDE) return { state: "reviewer", why: "low_confidence" };
+  // 3. Candidates straddle supported/not: require stronger confidence, else reviewer.
+  if (mixed && conf < T_MIXED) return { state: "reviewer", why: "mixed_candidates" };
+  // 4. Decided by the taxonomy row, never by the model.
+  return { state: "decided", status: chosen.status, policy: chosen };
+}
 
 module.exports = async (req, res) => {
   cors(res);
@@ -7,13 +34,25 @@ module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
   const started = Date.now();
   try {
-    const { text, lang } = await readBody(req);
+    const { text, lang, qa } = await readBody(req);
     if (!text || typeof text !== "string" || text.length > 2000) return res.status(400).json({ error: "text is required (max 2000 chars)" });
-    const { json, model } = await callClaude([{ type: "text", text: classifyPrompt(text, lang === "hi" ? "hi" : "en") }], { maxTokens: 1024, schema: "classify" });
-    // Never trust a policy_id the table doesn't contain.
-    if (!POLICY.some((p) => p.id === json.policy_id)) json.policy_id = "other";
-    return res.status(200).json({ ai: json, model, ms: Date.now() - started });
+    const query = qa && qa.answer ? `${text}\n${qa.answer}` : text;
+    let { candidates, queryTerms } = retrieve(query, K);
+    // Always keep the catch-all reachable so the model can say "none of these" honestly.
+    if (!candidates.some((c) => c.id === "others.others")) candidates = [...candidates, POLICY.find((p) => p.id === "others.others")];
+    const { json, model } = await callClaude(
+      [{ type: "text", text: classifyPrompt(text, lang === "hi" ? "hi" : "en", candidates, qa) }],
+      { maxTokens: 1024, tool: SCHEMAS.classify(candidates.map((c) => c.id)) },
+    );
+    if (json.policy_id !== "none_of_these" && !candidates.some((c) => c.id === json.policy_id)) json.policy_id = "none_of_these";
+    const decision = decide(json, candidates, qa);
+    return res.status(200).json({
+      ai: json, decision, model, ms: Date.now() - started,
+      candidates: candidates.map(({ id, label, categoryLabel, status, score, hits }) => ({ id, label, categoryLabel, status, score, hits })),
+      queryTerms,
+    });
   } catch (e) {
     return res.status(e.status || 500).json({ error: e.message || "Server error" });
   }
 };
+module.exports.decide = decide;

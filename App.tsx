@@ -10,11 +10,11 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } f
 import { TASAOrbiter_600SemiBold, TASAOrbiter_700Bold } from "@expo-google-fonts/tasa-orbiter";
 import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono";
 import { font, r, Theme, useTheme } from "./src/theme";
-import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Policy, Status as PStatus, inr, policyById, recordedClassify } from "./src/data";
+import { COPY, Copy, FEE, FEE_TOTAL, GST, Lang, NamesAI, PRESETS, REC_NAMES, ClassifyAI, Candidate, Decision, Policy, Status as PStatus, TAXONOMY_STATS as TAX, inr, policyById, recordedClassify } from "./src/data";
 import { classify, DocInput, health, Health, readNames } from "./src/api";
-import { compareNames, Token } from "./src/names";
+import { compareNames, scoreNames, Token } from "./src/names";
 import { GoLivePass, PassRow } from "./src/Pass";
-import { Button, Chip, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt } from "./src/ui";
+import { Button, Chip, FeeRows, Icon, IconRow, Notice, Panel, Reveal, Sheet, Status, Thinking, Tone, Txt, toneColors } from "./src/ui";
 
 const SPECIMEN_IMG = {
   pan: require("./assets/specimens/pan.png"),
@@ -27,7 +27,8 @@ type DocKey = "pan" | "aadhaar" | "bank";
 type Photo = { uri: string; base64: string; mediaType: string };
 type LogKind = "ai" | "rec" | "rule" | "mock";
 type LogItem = { id: number; kind: LogKind; title: string; at: string; ms?: number; note?: string; json: unknown };
-type BizResult = { ai: ClassifyAI; policy: Policy; status: PStatus; lowConf: boolean; docs: string[]; website: boolean; source: "live" | "rec" };
+type BizResult = { ai: ClassifyAI; policy: Policy; status: PStatus; lowConf: boolean; reviewerWhy?: "low_confidence" | "mixed_candidates"; docs: string[]; website: boolean; source: "live" | "rec"; candidates?: Candidate[] };
+type Ask = { question: string; answer: string };
 
 const haptic = (kind: "success" | "warning" | "light") => {
   if (Platform.OS === "web") return;
@@ -65,6 +66,8 @@ function Root() {
   const [bizBusy, setBizBusy] = useState(false);
   const [bizErr, setBizErr] = useState<string | null>(null);
   const [biz, setBiz] = useState<BizResult | null>(null);
+  const [ask, setAsk] = useState<Ask | null>(null);        // one clarifying question, when the verdict depends on it
+  const [showCands, setShowCands] = useState(false);
 
   const [pan, setPan] = useState("ABCPR0000X");
   const [panEdit, setPanEdit] = useState(false);
@@ -94,14 +97,17 @@ function Root() {
   const go = (n: number) => { setStep(n); requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: 0, animated: false })); };
   const scrollDown = () => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
 
-  function buildBiz(ai: ClassifyAI, l: Lang, source: "live" | "rec"): BizResult {
+  function buildBiz(ai: ClassifyAI, l: Lang, source: "live" | "rec", decision?: Decision, candidates?: Candidate[]): BizResult {
     const policy = policyById(ai.policy_id);
-    let status = policy.status, lowConf = false;
-    if (status === "supported" && !(Number(ai.confidence) >= 0.6)) { status = "needs_review"; lowConf = true; }
+    // The server's decision policy is authoritative when present; the recorded path applies the same rule locally.
+    let status = policy.status, lowConf = false, reviewerWhy: BizResult["reviewerWhy"];
+    if (decision?.state === "reviewer") { status = "needs_review"; lowConf = true; reviewerWhy = decision.why; }
+    else if (decision?.state === "decided") status = decision.status;
+    else if (status === "supported" && !(Number(ai.confidence) >= 0.6)) { status = "needs_review"; lowConf = true; reviewerWhy = "low_confidence"; }
     const docs = [...COPY[l].docBase];
     if (ai.is_reseller === true && policy.resellerDoc) docs.push(COPY[l].docInvoice);
-    if (policy.extra) docs.push(policy.extra);
-    return { ai, policy, status, lowConf, docs, website: ai.has_website === true, source };
+    for (const d of policy.extraDocs || []) docs.push(d);
+    return { ai, policy, status, lowConf, reviewerWhy, docs, website: ai.has_website === true, source, candidates };
   }
 
   const switchLang = (l: Lang) => {
@@ -112,13 +118,25 @@ function Root() {
     if (names && names.source === "rec" && names.recKey) setNames({ ai: REC_NAMES[names.recKey][l], source: "rec", recKey: names.recKey });
   };
 
-  async function runClassify() {
+  async function runClassify(qa?: Ask) {
     const text = bizText.trim(); if (!text) return;
-    setBizBusy(true); setBizErr(null); setBiz(null);
+    setBizBusy(true); setBizErr(null); setBiz(null); setShowCands(false);
+    if (!qa) setAsk(null);
     const presetKey = Object.keys(PRESETS).find((k) => PRESETS[k].en === text || PRESETS[k].hi === text) || null;
     let ai: ClassifyAI | null = null, source: "live" | "rec" = "rec", ms = 0, note = "", model = "";
+    let decision: Decision | undefined, candidates: Candidate[] | undefined;
     if (live) {
-      try { const res = await classify(text, lang); ai = res.ai; ms = res.ms; model = res.model; source = "live"; }
+      try {
+        const res = await classify(text, lang, qa);
+        ai = res.ai; ms = res.ms; model = res.model; source = "live"; decision = res.decision; candidates = res.candidates;
+        addLog({ kind: "rule", title: `Retrieval: ${res.candidates.length} candidates from ${TAX.rows} sub-categories`, note: `terms: ${res.queryTerms.join(", ")}`, json: res.candidates.map((x) => ({ id: x.id, status: x.status, score: x.score, matched: x.hits })) });
+        if (decision.state === "ask") {
+          setBizBusy(false);
+          setAsk({ question: decision.question, answer: "" });
+          addLog({ kind: "ai", title: "Needs one answer before deciding", ms, note: model, json: ai });
+          return;
+        }
+      }
       catch (e: any) { note = `Live call failed (${e?.message || "error"}); used the recorded answer.`; }
     }
     if (!ai && presetKey) ai = recordedClassify(presetKey, lang);
@@ -128,11 +146,11 @@ function Root() {
       addLog({ kind: "ai", title: "Description → category failed", note: note || "Live AI is off", json: { error: note || "Live AI is off and no recorded answer exists for this text" } });
       return;
     }
-    const res = buildBiz(ai, lang, source);
+    const res = buildBiz(ai, lang, source, decision, candidates);
     setBiz(res);
     haptic(res.status === "supported" ? "success" : "warning");
     addLog({ kind: source === "live" ? "ai" : "rec", title: "Description → category", ms, note: [model, note].filter(Boolean).join(" · "), json: ai });
-    addLog({ kind: "rule", title: "Eligibility from the policy table", json: { policy_id: res.policy.id, table_status: res.policy.status, confidence: ai.confidence, final_status: res.status, documents: res.docs } });
+    addLog({ kind: "rule", title: "Decision policy", json: { policy_id: res.policy.id, table_status: res.policy.status, confidence: ai.confidence, decision: decision || { state: "local_rule", threshold: 0.6 }, final_status: res.status, documents: res.docs } });
     scrollDown();
   }
 
@@ -168,7 +186,10 @@ function Root() {
     const doc = (k: DocKey): DocInput => photos[k] ? { base64: photos[k]!.base64, mediaType: photos[k]!.mediaType } : { sample: k === "bank" ? `bank_${variant}` : k };
     let ai: NamesAI | null = null, source: "live" | "rec" = "rec", ms = 0, note = "", model = "";
     if (live) {
-      try { const res = await readNames({ pan: doc("pan"), aadhaar: doc("aadhaar"), bank: doc("bank") }, lang); ai = res.ai; ms = res.ms; model = res.model; source = "live"; }
+      try {
+        const res = await readNames({ pan: doc("pan"), aadhaar: doc("aadhaar"), bank: doc("bank") }, lang); ai = res.ai; ms = res.ms; model = res.model; source = "live";
+        addLog({ kind: "rule", title: "Name-match engine: scored verdicts", note: `thresholds match ≥ ${res.thresholds.match}, review ≥ ${res.thresholds.review}${res.disagreements.length ? ` · overrode the model on ${res.disagreements.map((d) => d.doc).join(", ")}` : " · model agreed"}`, json: { engine: res.engine, disagreements: res.disagreements } });
+      }
       catch (e: any) { note = `Live call failed (${e?.message || "error"}); used the recorded answer.`; }
     } else {
       await new Promise((res) => setTimeout(res, 1400)); // keep the scan moment in recorded mode
@@ -182,7 +203,11 @@ function Root() {
     }
     setNames({ ai, source, recKey: source === "rec" ? variant : undefined });
     haptic(ai.comparisons.some((x) => x.verdict === "likely_fail") ? "warning" : "success");
-    addLog({ kind: source === "live" ? "ai" : "rec", title: "Read names from documents (vision) and compare", ms, note: [model, note].filter(Boolean).join(" · "), json: ai });
+    addLog({ kind: source === "live" ? "ai" : "rec", title: "Read names from documents (vision)", ms, note: [model, note].filter(Boolean).join(" · "), json: ai });
+    if (source === "rec") {
+      const legal = ai.documents.find((d) => d.doc === "PAN")?.name || "";
+      addLog({ kind: "rule", title: "Name-match engine: scored verdicts", note: "same engine, run locally", json: Object.fromEntries(ai.documents.filter((d) => d.doc !== "PAN").map((d) => { const r = scoreNames(legal, d.name); return [d.doc, { score: r.score, verdict: r.verdict, note: r.note }]; })) });
+    }
     scrollDown();
   }
 
@@ -236,7 +261,7 @@ function Root() {
         <View style={{ borderWidth: 1.5, borderColor: th.line, borderRadius: r.lg, backgroundColor: th.surface }}>
           <TextInput
             value={bizText}
-            onChangeText={(v) => { setBizText(v); setPreset(null); setBiz(null); setBizErr(null); }}
+            onChangeText={(v) => { setBizText(v); setPreset(null); setBiz(null); setBizErr(null); setAsk(null); }}
             placeholder={c.s1Placeholder}
             placeholderTextColor={th.faint}
             multiline
@@ -256,6 +281,28 @@ function Root() {
         ) : null}
         {bizBusy ? <Thinking th={th} label={c.s1Busy} /> : null}
         {bizErr ? <Notice th={th} tone="warn" title={bizErr} /> : null}
+        {ask && !biz && !bizBusy ? (
+          <Reveal>
+            <Panel th={th} tint>
+              <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+                <Icon name="help-circle" size={18} color={th.brand} />
+                <Txt th={th} v="smallMed" color={th.brand}>{c.askTitle}</Txt>
+              </View>
+              <Txt th={th} v="h3">{ask.question}</Txt>
+              <View style={{ borderWidth: 1.5, borderColor: th.line, borderRadius: r.md, backgroundColor: th.surface }}>
+                <TextInput
+                  value={ask.answer}
+                  onChangeText={(v) => setAsk({ ...ask, answer: v })}
+                  placeholder={c.askPlaceholder}
+                  placeholderTextColor={th.faint}
+                  accessibilityLabel={ask.question}
+                  style={{ minHeight: 48, padding: 12, fontFamily: font.body, fontSize: 16, color: th.ink, ...(Platform.OS === "web" ? ({ outlineStyle: "none" } as any) : null) }}
+                />
+              </View>
+              <Txt th={th} v="small" color={th.muted}>{c.askWhy}</Txt>
+            </Panel>
+          </Reveal>
+        ) : null}
         {biz ? (
           <Reveal>
             <Panel th={th}>
@@ -267,7 +314,30 @@ function Root() {
                 <Status th={th} tone={st === "supported" ? "ok" : st === "needs_review" ? "warn" : "bad"} label={c[biz.status]} />
               </View>
               <Txt th={th}>{biz.ai.explanation}</Txt>
-              {biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{c.lowConf}</Txt> : null}
+              {biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.reviewerWhy === "mixed_candidates" ? c.mixedConf : c.lowConf}</Txt> : null}
+              {biz.status === "needs_review" && biz.policy.reason && !biz.lowConf ? <Txt th={th} v="small" color={th.muted}>{biz.policy.reason}</Txt> : null}
+              {biz.candidates && biz.candidates.length > 1 ? (
+                <Pressable onPress={() => setShowCands((v) => !v)} accessibilityRole="button" style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+                  <Icon name={showCands ? "chevron-up" : "chevron-down"} size={14} color={th.muted} />
+                  <Txt th={th} v="smallMed" color={th.muted}>{c.considered(biz.candidates.length)}</Txt>
+                </Pressable>
+              ) : null}
+              {showCands && biz.candidates ? (
+                <View style={{ gap: 6 }}>
+                  {biz.candidates.map((x) => {
+                    const on = x.id === biz.policy.id;
+                    const tone: Tone = x.status === "supported" ? "ok" : x.status === "needs_review" ? "warn" : "bad";
+                    const [fg] = toneColors(th, tone);
+                    return (
+                      <View key={x.id} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: fg }} />
+                        <Txt th={th} v="small" color={on ? th.ink : th.muted} style={{ flex: 1 }}>{x.label}{on ? " ✓" : ""}</Txt>
+                        <Text style={{ fontFamily: font.mono, fontSize: 11, color: th.faint }}>{x.score.toFixed(2)}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : null}
             </Panel>
             {st === "not_supported" ? (
               <Notice th={th} tone="bad" title={c.stopTitle}>
@@ -293,7 +363,9 @@ function Root() {
       ? st === "not_supported"
         ? <Button th={th} kind="secondary" label={c.tryAnother} icon="rotate-ccw" onPress={() => { setBiz(null); setPreset(null); }} />
         : <Button th={th} label={c.s1Next} onPress={() => go(2)} />
-      : <Button th={th} label={c.s1Cta} onPress={runClassify} busy={bizBusy} disabled={!bizText.trim()} />;
+      : ask
+        ? <Button th={th} label={c.askCta} onPress={() => runClassify(ask)} busy={bizBusy} disabled={!ask.answer.trim()} />
+        : <Button th={th} label={c.s1Cta} onPress={() => runClassify()} busy={bizBusy} disabled={!bizText.trim()} />;
   }
 
   if (step === 2) {
