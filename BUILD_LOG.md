@@ -425,3 +425,21 @@ A core product decision: use AI only where deterministic rules fail, and keep mo
   - The draft appears under "Attached by the seller" in the reviewer case file, and the assistant knows what is attached so it doesn't redo it.
 - **Fixed from the test:** the assistant left "[registered mobile number]" blank although the case has her mobile; the server now fills any phone placeholder from the case. It also repeated a question in the message that delivered the draft; the prompt now forbids that.
 - **Tested live:** shop description → "Fill 2 blanks first" → ₹500–1,000 → how orders come in → 0 blanks, phone filled → Add to my application → Added.
+
+### 6.18 Attachments that show up, and blanks without friction (13 Oct, 22:00–23:10 IST)
+
+- **Trigger (my test):** I filled a draft and uploaded it, and nothing changed in the prototype.
+- **Attachments now reflect where they belong:**
+  - A website-page draft turns that row into "Draft attached. Publish it on your site, then re-check", with a Re-check button.
+  - Reviewer answers show "attached" on the review notice and the pass's Category row.
+  - A bank letter shows "Letter ready" in the names fix panel and on the pass.
+  - The pass counts attachments and links to the case file.
+  - Checks stay honest: an attached refund policy doesn't turn the website stamp green, because reviewers open the live site.
+- **Why the upload often never happened:** drafts kept blanks the assistant is told not to ask for (address, email). "Fill the blanks" through the model also failed: it re-asked after "Just draft it", added new blanks, and once wrote "this draft has blanks" into the policy text.
+- **Fix, built on rules rather than the model:**
+  - Blanks are filled inside the draft card. Each blank gets a row with its context ("…cancel your order within ___"), tap options inferred from its wording (days, hours, "refundable / non-refundable"), or a text box.
+  - "Use suggested values" accepts bracketed numbers in one tap.
+  - The count updates live, and Add unlocks at zero.
+  - "Just draft it" is enforced server-side with one retry.
+  - Known facts (her mobile) are filled automatically.
+- **Tested live:** partial demo store → Write it for me (refund) → Just draft it → suggested values → tap 7 → type address and email → Add → the Refund row shows the attached draft and the re-check.

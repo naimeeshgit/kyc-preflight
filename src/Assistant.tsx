@@ -145,9 +145,10 @@ export function Assistant({ th, t, lang, visible, onClose, caseData, starters, s
                         <View style={{ marginHorizontal: 12, marginBottom: 10, padding: 10, gap: 10, borderRadius: r.md, borderWidth: 1.5, borderColor: th.brand, backgroundColor: th.brandTint }}>
                           {blanks.map((b) => {
                             const label = b.slice(1, -1); const opts = blankOptions(label);
+                            const at = m.draft!.body.indexOf(b); const before = (m.draft!.body.slice(Math.max(0, at - 42), at).split("\n").pop() || "").trim();
                             return (
                               <View key={b} style={{ gap: 6 }}>
-                                <Txt th={th} v="smallMed">{label.replace(/^e\.g\.,?\s*/i, "")}</Txt>
+                                <Txt th={th} v="smallMed">{before ? `…${before} ` : ""}<Txt th={th} v="smallMed" color={th.brand}>___</Txt>{`  (${label.replace(/^e\.g\.,?\s*/i, "")})`}</Txt>
                                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
                                   {opts.map((o) => (
                                     <Pressable key={o} onPress={() => fillBlank(i, b, o)} accessibilityRole="button" style={{ borderWidth: 1.5, borderColor: th.brand, backgroundColor: th.surface, borderRadius: r.pill, paddingVertical: 6, paddingHorizontal: 12 }}>
